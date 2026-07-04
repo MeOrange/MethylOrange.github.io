@@ -1,4 +1,168 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+    
+    <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport" />
+    <meta name="description" content="" />
+    <meta name="hexo-theme-A4" content="v2.0.1" />
+    <link rel="alternate icon" type="image/webp" href="/MySource/img/avatar.jpg">
+    <title>Ammonia</title>
+
+    
+        
+<link rel="stylesheet" href="/css/highlight/style1.css">
+
+        
+<link rel="stylesheet" href="/css/reset.css">
+
+        
+<link rel="stylesheet" href="/css/markdown.css">
+
+        
+<link rel="stylesheet" href="/css/fonts.css">
+
+         <!--注意：首页既不是post也不是page-->
+        
+
+        
+<link rel="stylesheet" href="/css/ui.css">
+
+        
+<link rel="stylesheet" href="/css/style.css">
+
+
+        
+            <!--返回顶部css-->
+            
+<link rel="stylesheet" href="/css/returnToTop.css">
+
+            
+<link rel="stylesheet" href="/css/unicons.css">
+
+        
+        
+            <!--目录-->
+            
+<link rel="stylesheet" href="/css/toc.css">
+
+        
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/lightgallery-bundle.min.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/custom.css">
+
+    
+
+    
+
+    <!-- <link rel="stylesheet" href="https://chinese-fonts-cdn.deno.dev/packages/lxgwwenkai/dist/LXGWWenKai-Regular/result.css" /> -->
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/@chinese-fonts/lxgwwenkai@3.0.0/dist/LXGWWenKai-Regular/result.css' /> 
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+    
+    
+
+    
+    
+
+
+
+    
+
+    
+    
+
+
+
+
+    
+    
+
+
+    <body>
+        
+        
+            
+        
+        <div class="paper">
+
+            
+
+            
+                <div class="shadow-drop-2-bottom paper-main">
+                    
+
+
+<div class="header">
+    <div class="header-container">
+        <style>
+            .header-img {
+                width: 56px;
+                height: auto;
+                object-fit: cover; /* 保持图片比例 */
+                transition: transform 0.3s ease-in-out; 
+                border-radius: 50%; 
+            }
+            
+        </style>
+        <img 
+            alt="^-^" 
+            cache-control="max-age=86400" 
+            class="header-img" 
+            src="/MySource/img/avatar.jpg" 
+        />
+        <div class="header-content">
+            <a class="logo" href="/">Ammonia</a> 
+            <span class="description"></span> 
+        </div>
+    </div>
+    
+   
+    <ul class="nav">
+        
+            
+                <li><a href="/">首页</a></li>
+            
+        
+            
+                <li><a href="/list/">文章</a></li>
+            
+        
+            
+                <li><a href="/categories/">分类</a></li>
+            
+        
+    </ul>
+</div>
+
+                    
+                    
+
+                    
+                    
+
+                    <!--说明是文章post页面-->
+                    
+                        <div class="post-main">
+    
+
+    
+
+    
+
+    <div class="post-md">
+        
+            
+        
+        <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -442,28 +606,6 @@
     const codeOutput = document.getElementById('codeOutput');
     const copyTip = document.getElementById('copyTip');
 
-    // 调试模式：连续点击标题3次切换
-    const pageTitle = document.querySelector('.page-header h2');
-    let titleClickCount = 0;
-    let titleClickTimer = null;
-    if (pageTitle) {
-        pageTitle.style.cursor = 'default';
-        pageTitle.addEventListener('click', function() {
-            titleClickCount++;
-            clearTimeout(titleClickTimer);
-            titleClickTimer = setTimeout(() => { titleClickCount = 0; }, 800);
-            if (titleClickCount >= 3) {
-                titleClickCount = 0;
-                clearTimeout(titleClickTimer);
-                debugMode = !debugMode;
-                console.log('%c🔧 调试模式: ' + (debugMode ? '开' : '关'),
-                    'background:#333;color:#ff0;padding:2px 8px;border-radius:3px;font-size:16px;');
-                if (debugMode) pageTitle.style.color = '#e67e22';
-                else pageTitle.style.color = '';
-            }
-        });
-    }
-
     // 默认字体列表
     const DEFAULT_FONT_STACKS = {
         'SimSun': "'SimSun','宋体',serif",
@@ -491,7 +633,6 @@
     let selectedId = null;
     let selectedIds = new Set(); // 多选状态（框选时使用）
     let nextId = 1;
-    let debugMode = false; // 调试模式：连续点击标题3次切换
     const DEFAULT_PX_PER_EM = 400;
     let pxPerEm = DEFAULT_PX_PER_EM;
     let lockAspectRatio = false;
@@ -2100,24 +2241,10 @@
             contourComp.push(found);
         }
 
-        // 多点采样判断a是否在b内（比单纯中心点更鲁棒，处理屈折封闭区域）
+        // 判断a的中心在b的Path内
         function isInside(a, b) {
             const ax = a.b.minX + a.b.w/2, ay = a.b.minY + a.b.h/2;
-            try {
-                const p2dA = new Path2D(b.d);
-                if (tstCtx.isPointInPath(p2dA, ax, ay)) return true;
-            } catch(_) {}
-            // 中心点失败：采样a边界框上8个点，过半在内部即判定为包含
-            const offs = [[0.25,0.25],[0.75,0.25],[0.25,0.75],[0.75,0.75],
-                          [0.5,0.1],[0.5,0.9],[0.1,0.5],[0.9,0.5]];
-            let inside = 0;
-            for (const [fx,fy] of offs) {
-                try {
-                    const p2d = new Path2D(b.d);
-                    if (tstCtx.isPointInPath(p2d, a.b.minX + a.b.w*fx, a.b.minY + a.b.h*fy)) inside++;
-                } catch(_) {}
-            }
-            return inside >= 5; // 8个采样点中至少5个在内部
+            try { const p2d = new Path2D(b.d); return tstCtx.isPointInPath(p2d, ax, ay); } catch(_) { return false; }
         }
 
         // 空洞只能属于同组件outer
@@ -2131,21 +2258,9 @@
             // 找同组件中且包含j的outer
             let bestOuter = -1, bestArea = Infinity;
             for (let i = 0; i < contours.length; i++) {
-                if (i === j || contourComp[i] !== cjComp || assignedHoles.has(i)) continue;
-                // j的面积不能超过i，空洞不可能比外轮廓大
-                if (contours[j].area > contours[i].area) continue;
-                // 判断j是否被i包含：多点路径检测，失败则bbox兜底
-                let jInsideI = isInside(contours[j], contours[i]);
-                if (!jInsideI) {
-                    // bbox兜底（处理屈折封闭区域，如"我"字中间）：重心在i的bbox内且面积不超过i的50%
-                    const jCx = contours[j].b.minX + contours[j].b.w / 2;
-                    const jCy = contours[j].b.minY + contours[j].b.h / 2;
-                    const iMinX = contours[i].b.minX, iMaxX = iMinX + contours[i].b.w;
-                    const iMinY = contours[i].b.minY, iMaxY = iMinY + contours[i].b.h;
-                    jInsideI = (jCx >= iMinX && jCx <= iMaxX && jCy >= iMinY && jCy <= iMaxY &&
-                                contours[j].area <= contours[i].area * 0.5);
-                }
-                if (jInsideI && contours[i].area < bestArea) {
+                if (i === j || contourComp[i] !== cjComp) continue;
+                if (!isInside(contours[j], contours[i])) continue;
+                if (isContourHole(contours[j], contours[i]) && contours[i].area < bestArea) {
                     bestArea = contours[i].area;
                     bestOuter = i;
                 }
@@ -2191,7 +2306,7 @@
         if (outerContours.length < nextComp) {
             // 收集已由外轮廓覆盖的CCL组件
             const coveredComps = new Set();
-            outerContours.forEach((group) => {
+            outerContours.forEach((group, gi) => {
                 // 找到group.outer在contours中的索引
                 const oi = contours.indexOf(group.outer);
                 if (oi >= 0 && contourComp[oi] >= 0) coveredComps.add(contourComp[oi]);
@@ -2220,28 +2335,26 @@
         }
         // ============ 补偿结束 ============
 
-        // ============ 调试：输出矢量化诊断信息（需先连续点击标题3次开启调试模式） ============
-        if (debugMode) {
-            const diagInfo = [];
-            diagInfo.push(`追踪到的轮廓数: ${traceResult.length}`);
-            diagInfo.push(`生成路径(d): ${rawPaths.length}`);
-            diagInfo.push(`有效轮廓数: ${contours.length}`);
-            diagInfo.push(`CCL连通组件数: ${nextComp}`);
-            contours.forEach((c, i) => {
-                const isHole = assignedHoles.has(i);
-                const owner = holeBelongsTo.get(i);
-                const comp = contourComp[i];
-                const areaInfo = c.b.w.toFixed(4) + 'x' + c.b.h.toFixed(4) + ' (area:' + (c.area*10000).toFixed(0) + ')';
-                diagInfo.push(`  轮廓[${i}]: ${isHole ? `空洞(属于[${owner}])` : '外轮廓'}, CCL组件=${comp}, 包围盒=${areaInfo}`);
-            });
-            diagInfo.push(`外轮廓组数: ${outerContours.length} → 将生成${outerContours.length}个矢量部件`);
-            console.log(diagInfo.join('\n'));
-            if (outerContours.length === 1 && nextComp > 1) {
-                alert('⚠ 诊断：CCL检测到' + nextComp + '个独立组件，但只生成了1个矢量部件。' +
-                      '\n这说明轮廓分组逻辑有问题，请打开浏览器控制台(F12)查看详细诊断信息。');
-            } else {
-                alert('诊断信息（请同时查看浏览器控制台F12）:\n' + diagInfo.join('\n'));
-            }
+        // ============ 调试：输出矢量化诊断信息 ============
+        const diagInfo = [];
+        diagInfo.push(`追踪到的轮廓数: ${traceResult.length}`);
+        diagInfo.push(`生成路径(d): ${rawPaths.length}`);
+        diagInfo.push(`有效轮廓数: ${contours.length}`);
+        diagInfo.push(`CCL连通组件数: ${nextComp}`);
+        contours.forEach((c, i) => {
+            const isHole = assignedHoles.has(i);
+            const owner = holeBelongsTo.get(i);
+            const comp = contourComp[i];
+            const areaInfo = c.b.w.toFixed(4) + 'x' + c.b.h.toFixed(4) + ' (area:' + (c.area*10000).toFixed(0) + ')';
+            diagInfo.push(`  轮廓[${i}]: ${isHole ? `空洞(属于[${owner}])` : '外轮廓'}, CCL组件=${comp}, 包围盒=${areaInfo}`);
+        });
+        diagInfo.push(`外轮廓组数: ${outerContours.length} → 将生成${outerContours.length}个矢量部件`);
+        console.log(diagInfo.join('\n'));
+        if (outerContours.length === 1 && nextComp > 1) {
+            alert('⚠ 诊断：CCL检测到' + nextComp + '个独立组件，但只生成了1个矢量部件。' +
+                  '\n这说明轮廓分组逻辑有问题，请打开浏览器控制台(F12)查看详细诊断信息。');
+        } else {
+            alert('诊断信息（请同时查看浏览器控制台F12）:\n' + diagInfo.join('\n'));
         }
         // ============ 调试结束 ============
 
@@ -2251,8 +2364,8 @@
             const pathList = [group.outer.d, ...group.holes.map(h => h.d)];
             const combinedD = pathList.join(' ');
 
-            // 从合并后的完整路径重新计算包围盒（可能含bbox兜底合并的空洞超出outer范围）
-            const b = getPathBounds(combinedD) || group.outer.b;
+            // 计算整体包围盒（outer的包围盒足够，因为holes必然在outer内）
+            const b = group.outer.b;
             const adjustedD = translatePath(combinedD, -b.minX, -b.minY);
 
             const vectorPart = {
@@ -3066,7 +3179,7 @@
                                 return `<button onclick="${p.type === 'vector' && !vDisabled ? `toggleVertexEdit(${p.id})` : 'return'}" style="${p.type === 'vector' && !vDisabled ? (vertexEditId===p.id ? 'background:#2196F3;color:#fff;border-color:#1976D2;' : '') : 'color:#ccc;cursor:not-allowed;'}" title="${vTitle}">编辑顶点</button>`;
                             })()}
                             <button onclick="resetPart(${p.id})" style="color:#d4a017;">复原此部件</button>
-                            <button onclick="if(selectedIds.size>0)deleteSelectedParts();else deletePart(${p.id})" style="color:red;">删除此部件</button>
+                            <button onclick="deletePart(${p.id})" style="color:red;">删除此部件</button>
                         </div>
                     </div>
                     <div style="flex:0 0 auto; display:flex; flex-direction:column; gap:8px;">
@@ -4346,3 +4459,160 @@
 </script>
 </body>
 </html>
+    </div>
+
+    <div class="post-meta">
+        <i>
+        
+        </i>
+    </div>
+    <br>
+    
+    
+        
+            
+    
+            <div class="post-footer-pre-next">
+                
+
+                
+            </div>
+    
+        
+    
+
+    
+        
+
+     
+</div>
+
+
+
+
+                    
+
+                    <div class="footer">
+    
+        <span> 
+             
+
+            
+                
+
+            
+        </span>
+       
+    
+</div>
+
+
+
+<!--这是指一条线往下的内容-->
+<div class="footer-last">
+    
+            <span></span>
+            
+    
+</div>
+
+
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+    <!--目录-->
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript" ></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js" type="text/javascript" ></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tocify/1.9.0/javascripts/jquery.tocify.min.js" type="text/javascript" ></script>
+        
+<script src="/js/toc.js"></script>
+
+    
+
+    
+<script src="/js/randomHeaderContent.js"></script>
+
+    <!--回到顶部按钮-->
+    
+        
+<script src="/js/returnToTop.js"></script>
+
+    
+
+    
+        
+<script src="/js/returnToLastPage.js"></script>
+
+    
+
+
+
+
+
+<script src="/js/lightgallery/lightgallery.umd.min.js"></script>
+
+
+
+<script src="/js/lightgallery/plugins/lg-thumbnail.umd.min.js"></script>
+
+
+
+<script src="/js/lightgallery/plugins/lg-fullscreen.umd.min.js"></script>
+
+
+<script src="/js/lightgallery/plugins/lg-autoplay.umd.min.js"></script>
+
+
+<script src="/js/lightgallery/plugins/lg-zoom.umd.min.js"></script>
+
+
+<script src="/js/lightgallery/plugins/lg-rotate.umd.min.js"></script>
+
+
+<script src="/js/lightgallery/plugins/lg-paper.umd.min.js"></script>
+
+
+
+
+<script type="text/javascript">
+     
+    if (typeof lightGallery !== "undefined") {
+        var options1 = {
+            selector: '.gallery-item',
+            plugins: [lgThumbnail, lgFullscreen, lgAutoplay, lgZoom, lgRotate, lgPager], // 启用插件
+            thumbnail: true,          // 显示缩略图
+            zoom: true,               // 启用缩放功
+            rotate: true,             // 启用旋转功能能
+            autoplay: true,        // 启用自动播放功能
+            fullScreen: true,      // 启用全屏功能
+            pager: false, //页码,
+            zoomFromOrigin: true,   // 从原始位置缩放
+            actualSize: true,       // 启用查看实际大小的功能
+            enableZoomAfter: 300,    // 延迟缩放，确保图片加载完成后可缩放
+        };
+        lightGallery(document.getElementsByClassName('.article-gallery')[0], options1); // 修复选择器
+    }
+    
+</script>
+
+
+                </div>
+            
+            
+                <!-- 回到顶部的按钮-->
+                <div class="progress-wrap shadow-drop-2-bottom">
+                    <svg class="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
+                        <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98"/>
+                    </svg>
+                </div>
+            
+            
+    </body>
+</html>
+<script src="/js/emojiHandler.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        wrapEmojis('.paper');
+    });
+</script>
