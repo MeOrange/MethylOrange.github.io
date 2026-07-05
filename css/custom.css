@@ -18,6 +18,11 @@
     font-display: swap;
 }
 
+/* 导入文津宋体的CSS文件 */
+@import url('https://fontsapi.zeoseven.com/376/main/result.css');
+@import url('https://fontsapi.zeoseven.com/376/p2/result.css');
+@import url('https://fontsapi.zeoseven.com/376/p3/result.css');
+
 /* “.”开头为类选择器，应用与 class="font-SCSong" 的标记 */
 .font-SCSong {
     font-family: 'SourceHanSerifSC', serif;
