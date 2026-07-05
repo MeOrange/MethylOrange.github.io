@@ -11,8 +11,8 @@
 
 /* custom.css - 将 MySource 中的字体仅应用到文章内容 */
 @font-face {
-    font-family: 'SourceHanSerifSC';
-    src: url('/MySource/fonts/SourceHanSerifSC.woff2') format('woff2');
+    font-family: 'SourceHanSerifSC_PUA';
+    src: url('/MySource/fonts/SourceHanSerifSC_PUA.woff2') format('woff2');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
@@ -22,11 +22,6 @@
 @import url('https://fontsapi.zeoseven.com/376/main/result.css');
 @import url('https://fontsapi.zeoseven.com/376/p2/result.css');
 @import url('https://fontsapi.zeoseven.com/376/p3/result.css');
-
-/* “.”开头为类选择器，应用与 class="font-SCSong" 的标记 */
-.font-SCSong {
-    font-family: 'SourceHanSerifSC', serif;
-}
 
 /* 将表格填充改为全白, 用多个后代选择器堆权重，不粗暴使用!important */
 .post-md table tr:nth-child(n) td{
