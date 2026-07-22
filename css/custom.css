@@ -18,6 +18,15 @@
     font-display: swap;
 }
 
+@font-face
+{
+    font-family: "Billequin";
+    src: url('/MySource/fonts/Billequin.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 /* 导入文津宋体的CSS文件 */
 @import url('https://fontsapi.zeoseven.com/376/main/result.css');
 @import url('https://fontsapi.zeoseven.com/376/p2/result.css');
