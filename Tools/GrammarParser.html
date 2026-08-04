@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英语语法分析工具</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --panel2:#fbfcfe; --border:#e6e9f0; --text:#242933; --muted:#8b94a6;
+  --accent:#4f6ef7; --accent-soft:#eef1fe; --accent-dark:#3d5ce0;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html,body{height:100%}
+body{background:var(--bg); color:var(--text); font-family:"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; font-size:14.5px; line-height:1.55}
+#wrap{max-width:1400px; margin:0 auto; padding:0 20px 60px}
+#layout{display:grid; grid-template-columns:minmax(0,1fr) 330px; gap:16px; align-items:start}
+#side{position:sticky; top:72px; background:var(--panel); border:1px solid var(--border); border-radius:12px; overflow:hidden; max-height:calc(100vh - 92px); display:flex; flex-direction:column}
+#side .sd-head{display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid var(--border); font-size:13px; font-weight:700; color:var(--accent); background:var(--panel2)}
+#side .sd-body{padding:10px 12px; overflow-y:auto; font-size:13px}
+
+header{position:sticky; top:0; z-index:30; display:flex; align-items:center; flex-wrap:wrap; gap:12px; padding:14px 0; margin-bottom:16px; border-bottom:1px solid rgba(230,233,240,.85); background:rgba(246,247,249,.82); backdrop-filter:blur(14px) saturate(1.4); -webkit-backdrop-filter:blur(14px) saturate(1.4)}
+header h1{font-size:17px; font-weight:700; letter-spacing:.3px; display:flex; align-items:center}
+header h1{font-size:18px}
+header h1 a{font-size:14px; font-weight:400; color:#86868b; text-decoration:none; margin-left:12px; transition:color .15s}
+header h1 a:hover{color:#06c}
+.settings{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-left:auto}
+.set{display:flex; align-items:center; gap:6px; color:var(--muted); font-size:12.5px; white-space:nowrap}
+input[type=password]{
+  background:#fbfcfe; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:7px 10px; font-size:13px; outline:none; transition:border .2s, box-shadow .2s
+}
+input[type=password]:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+input[type=password]{width:240px}
+select{
+  -webkit-appearance:none; -moz-appearance:none; appearance:none;
+  background:#ffffff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%238b94a6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 10px center/12px;
+  color:var(--text); border:1px solid var(--border); border-radius:9px; padding:7px 30px 7px 12px; font-size:13px; font-weight:600; cursor:pointer; outline:none; transition:border .2s, box-shadow .2s, background-color .2s
+}
+select:hover{border-color:#cdd4e0; background-color:#f6f8fc}
+select:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.dd{position:relative}
+.dd-btn{display:flex; align-items:center; justify-content:space-between; gap:8px; width:118px; background:#eef1fe; color:#3d5ce0; border:1px solid #d5dbfa; border-radius:9px; padding:7px 12px; font-size:13px; font-weight:700; cursor:pointer; user-select:none; transition:border-color .2s, background-color .2s}
+.dd-btn:hover{border-color:#b9c4f6; background-color:#e2e7fd}
+.dd-ic{width:12px; height:12px; color:#4f6ef7; transition:transform .15s}
+.dd.open .dd-ic{transform:rotate(180deg)}
+.dd-list{display:none; position:absolute; top:calc(100% + 6px); left:0; width:100%; background:#fff; border:1px solid var(--border); border-radius:10px; box-shadow:0 10px 28px rgba(20,30,60,.14); padding:4px; z-index:60}
+.dd.open .dd-list{display:block}
+.dd-opt{display:flex; align-items:center; padding:7px 10px; border-radius:7px; font-size:13px; color:var(--text); cursor:pointer; white-space:nowrap}
+.dd-opt:hover{background:var(--accent-soft); color:var(--accent)}
+.dd-opt.on{background:var(--accent-soft); color:var(--accent); font-weight:700}
+select option{font-weight:500}
+
+.panel{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:16px}
+#textInput{width:100%; min-height:120px; background:#fbfcfe; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:12px; font-size:14px; font-family:inherit; resize:vertical; outline:none; transition:border .2s, box-shadow .2s}
+#textInput:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.input-actions{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; align-items:center}
+button{
+  background:var(--accent); color:#fff; border:1px solid transparent; border-radius:9px; padding:8px 16px; font-size:13.5px; cursor:pointer; font-weight:600; transition:background .15s, transform .05s; font-family:inherit
+}
+button:hover{background:var(--accent-dark)}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.45; cursor:not-allowed}
+button.ghost{background:var(--panel); color:#4a5263; border-color:var(--border); font-weight:500}
+button.ghost:hover{background:#f4f6fa; color:var(--text)}
+button.danger{background:var(--panel); color:#d0565a; border-color:#f0d5d6; font-weight:500}
+button.danger:hover{background:#fdf0f0}
+#stats{color:var(--muted); font-size:12.5px; margin-left:auto}
+.progress{display:none; margin-top:14px}
+.progress.show{display:block}
+.progress .bar{height:4px; background:#eef0f5; border-radius:4px; overflow:hidden}
+.progress .bar>div{height:100%; width:0%; background:linear-gradient(90deg,var(--accent),#38b6a8); transition:width .3s; border-radius:4px}
+#progressText{margin-top:8px; color:var(--muted); font-size:12.5px}
+
+.original{white-space:pre-wrap; background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; font-size:15px; line-height:1.8; letter-spacing:.1px}
+.out-divider{border-top:1px solid var(--border); margin-top:14px; padding-top:12px}
+.tok{cursor:pointer; border-radius:3px; padding:0 1px; transition:background .15s}
+.tok:hover{background:#e7ebf5}
+.tok.flash{animation:fl 1.4s ease}
+.s-wrap.flash{outline:2px solid rgba(217,119,6,.5); border-radius:4px}
+@keyframes fl{0%,100%{box-shadow:none}15%,45%{box-shadow:0 0 0 3px rgba(217,119,6,.45); background:rgba(217,119,6,.12)}}
+
+.brk{cursor:pointer; border-radius:3px}
+.brk .ob,.brk .cb{color:var(--c); font-weight:700}
+.brk-S{--c:#98a1b3}
+.brk-主句{--c:#d97706}
+.brk-从句{--c:#6a5ae0}
+.brk-并列分句{--c:#c2418c}
+.brk-NP{--c:#8e4ec6}
+.brk-VP{--c:#3e6ff0}
+.brk-PP{--c:#2f9e63}
+.brk-AdjP{--c:#0e9f9b}
+.brk-AdvP{--c:#b45309}
+.brk-不定式短语{--c:#db2777}
+.brk-动名词短语{--c:#be185d}
+.brk-分词短语{--c:#9d174d}
+
+.sent-card{background:var(--panel2); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:12px}
+.sent-card h3{font-size:13px; margin-bottom:8px; color:var(--muted); font-weight:600}
+.sent-card h3 b{color:var(--accent); font-weight:700}
+.clause{margin:8px 0; padding:10px 12px; border-radius:8px; background:var(--panel); border:1px solid var(--border)}
+.clause.sub{margin-left:22px; border-left:3px solid var(--accent)}
+.badge{display:inline-block; font-size:11.5px; border-radius:5px; padding:1px 9px; font-weight:700; margin-right:8px; vertical-align:middle}
+.bg-main{background:#fdf6e3; color:#a16207}
+.bg-sub{background:#f0ecfe; color:#6d28d9}
+.bg-coord{background:#fdeef7; color:#c2418c}
+.struct{font-family:Consolas,monospace; font-size:12.5px; color:#0f8f80; background:#eaf8f6; border-radius:5px; padding:1px 8px}
+.parts{margin-top:8px; display:flex; flex-direction:column; gap:5px}
+.part{display:flex; gap:8px; align-items:flex-start; font-size:13px}
+.part .k{flex:0 0 52px; font-weight:700; text-align:center; border-radius:6px; padding:1px 0; font-size:12px}
+.part .v{flex:1}
+
+.phr{display:inline-flex; flex-wrap:wrap; align-items:center; gap:6px; background:var(--panel2); border:1px solid var(--border); border-radius:9px; padding:6px 10px; margin:0 6px 8px 0; font-size:13px}
+.phr button.tx{background:none; border:none; color:var(--verb,#3e6ff0); cursor:pointer; font-size:13px; font-family:inherit; text-decoration:underline dotted; padding:0; font-weight:500}
+.phr button.tx:hover{color:var(--accent-dark)}
+.phr .head{color:var(--muted); font-size:12px}
+.phr .role{font-size:12px; color:#8e4ec6}
+.ptype{font-size:11px; font-weight:700; border-radius:5px; padding:1px 7px}
+.pt-NP{background:#f0ecfe; color:#6d28d9}
+.pt-VP{background:#e8f0fe; color:#1d4ed8}
+.pt-PP{background:#fdf3e7; color:#b45309}
+.pt-AdjP{background:#e7f6ee; color:#15803d}
+.pt-AdvP{background:#e6f7f6; color:#0f766e}
+.pt-to,.pt-不定式短语{background:#fdecec; color:#c62828}
+.pt-part,.pt-分词短语{background:#fdeef7; color:#c2418c}
+.pt-ger,.pt-动名词短语{background:#fbf3e0; color:#a16207}
+.pt-other{background:#eef0f4; color:#64748b}
+
+table{width:100%; border-collapse:collapse; font-size:13px}
+th{color:var(--muted); text-align:left; padding:8px 10px; border-bottom:1px solid var(--border); font-weight:600; font-size:12.5px}
+td{padding:8px 10px; border-bottom:1px solid #f0f2f6; vertical-align:top}
+tr:hover td{background:#fafbfd}
+.tag{display:inline-block; font-size:11px; font-weight:700; border-radius:5px; padding:1px 8px; margin-right:6px}
+.tg-考研高频{background:#fdecec; color:#c62828}
+.tg-熟词生义{background:#fdf6e3; color:#a16207}
+.tg-固定搭配{background:#e8f0fe; color:#1d4ed8}
+.tg-长难句{background:#f0ecfe; color:#6d28d9}
+.tg-其他{background:#eef0f4; color:#64748b}
+.w-en{font-weight:700; color:#1f2937; font-family:Georgia,serif; font-size:14.5px}
+
+.point{background:var(--panel2); border:1px solid var(--border); border-radius:9px; padding:9px 12px; margin-bottom:8px; font-size:13px}
+.point .w-en{display:inline-block; margin-right:6px}
+
+.brk .rb{font-size:9.5px; font-weight:700; color:var(--c); margin-left:2px; vertical-align:1px}
+.tok:hover{background:#f0f2f7; border-radius:3px; cursor:pointer}
+.tok.sel{background:#fde68a; border-radius:3px}
+.brk.sel{background:rgba(253,230,138,.45); border-radius:3px}
+.s-more{display:inline-block; font-size:11px; color:#fff; background:#8b94a6; border-radius:5px; padding:0 7px; cursor:pointer; margin-left:8px; vertical-align:middle; font-weight:600; opacity:0; pointer-events:none; transition:opacity .15s}
+.s-more:hover{background:var(--accent)}
+.s-wrap:hover .s-more{opacity:1; pointer-events:auto}
+#textArea .s-wrap{display:block; margin-bottom:5px}
+#textArea .s-wrap.pnew{margin-top:12px}
+#textArea .s-raw{color:#7d8798}
+.s-fail{font-size:11px; color:#c7ccd6; margin-left:6px}
+.sec-box{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:14px 16px; margin-bottom:16px}
+.sec-head{font-size:12px; font-weight:700; color:var(--accent); display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.sec-head .sp{flex:1}
+.sd-sub{font-size:11px; color:var(--muted); font-weight:700; letter-spacing:1px; margin:14px 0 8px; text-transform:uppercase}
+#mainBottom table th,#mainBottom table td{padding:6px 6px; font-size:12px}
+#sideDetail .sd-sub{margin-top:0}
+.tree .tr-S{color:#98a1b3}.tree .tr-主句{color:#d97706}.tree .tr-从句{color:#6a5ae0}.tree .tr-并列分句{color:#c2418c}
+.tree .tr-NP{color:#8e4ec6}.tree .tr-VP{color:#3e6ff0}.tree .tr-PP{color:#2f9e63}.tree .tr-AdjP{color:#0e9f9b}.tree .tr-AdvP{color:#b45309}
+.tree .tr-不定式短语{color:#db2777}.tree .tr-动名词短语{color:#be185d}.tree .tr-分词短语{color:#9d174d}
+.tree sup{font-size:9.5px; font-weight:700; line-height:0; margin:0 1px}
+.tree mark{background:#fde047; color:#333; padding:0 2px; border-radius:3px}
+.kv{background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:9px 12px; margin-top:6px; font-size:13px}
+#sideDetail .kv .k-lb{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:var(--muted); margin-bottom:3px}
+#sideDetail .kv .k-lb::after{content:""; flex:1; height:1px; background:var(--border)}
+#sideDetail .kv.ty-def{border-left:3px solid var(--accent)}
+#sideDetail .kv.ty-use{border-left:3px solid #d97706}
+#sideDetail .kv.ty-morph{border-left:3px solid #0f8f80}
+#sideDetail .kv.ty-note{border-left:3px solid #a16207}
+#sideDetail .kv.ty-mod{border-left:3px solid #6d28d9}
+.wd{font-family:Georgia,serif; font-size:15px; font-weight:700}
+.chip{display:inline-block; border-radius:6px; padding:2px 10px; font-size:12px; font-weight:600; margin:2px 4px 2px 0}
+.chip.role{background:var(--accent-soft); color:var(--accent)}
+.chip.pos{background:#eef0f4; color:#64748b}
+.muted{color:var(--muted)}
+a{color:var(--accent); text-decoration:none}
+a:hover{text-decoration:underline}
+.empty{color:var(--muted); padding:24px 0; text-align:center}
+@media (max-width:1050px){
+  #layout{grid-template-columns:1fr}
+  #side{position:static; max-height:none}
+  input[type=password]{width:170px}
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+
+<header>
+  <h1>英语语法分析工具 <a href="/index">首页</a></h1>
+  <div class="settings">
+    <div class="set">模型
+      <div class="dd" id="dd">
+        <div class="dd-btn" id="ddBtn"><span id="ddTxt">Flash 快速版</span>
+          <svg class="dd-ic" viewBox="0 0 12 12" width="12" height="12"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="dd-list" id="ddList">
+          <div class="dd-opt" data-v="flash">Flash 快速版</div>
+          <div class="dd-opt" data-v="pro">Pro 深度版</div>
+        </div>
+        <select id="modelSel" style="display:none">
+          <option value="flash">Flash 快速版</option>
+          <option value="pro">Pro 深度版</option>
+        </select>
+      </div>
+    </div>
+    <label class="set">API Key
+      <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+    </label>
+    <button id="btnSave" class="ghost">保存</button>
+  </div>
+</header>
+
+<div id="layout">
+<div id="main">
+<div class="panel">
+  <textarea id="textInput" placeholder="在这里输入英语句子或整篇文章（保留换行/段落排版），然后点击「开始分析」…"></textarea>
+  <div class="input-actions">
+    <button id="btnAnalyze">开始分析</button>
+    <button id="btnStop" class="danger" disabled>停止</button>
+    <button id="btnSample" class="ghost">载入示例</button>
+    <button id="btnClear" class="ghost">清空</button>
+    <span id="stats"></span>
+  </div>
+  <div class="progress" id="progress">
+    <div class="bar"><div id="progressBar"></div></div>
+    <div id="progressText"></div>
+  </div>
+  <div class="out-divider"></div>
+  <div class="original" id="textArea" style="display:none"></div>
+</div>
+
+<div id="mainBottom">
+  <div class="sec-box">
+    <div class="sec-head">词汇考点<span class="sp"></span><span id="sideCount" style="font-weight:400;font-size:11px;color:var(--muted)"></span></div>
+    <div id="vocabArea"><div class="empty">暂无数据</div></div>
+  </div>
+</div>
+</div>
+
+<aside id="side">
+  <div class="sd-head">成分释义</div>
+  <div class="sd-body">
+    <div id="sideDetail"><div class="empty">点击原文中的单词或结构，释义显示在这里。</div></div>
+  </div>
+</aside>
+</div>
+
+</div>
+</details>
+
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const API_URL = "https://api.deepseek.com/chat/completions";
+const SAMPLE = "Whereas the majority of workers in industrialised countries are subject to strict labour regulations that address workplace safety, many developing economies have yet to implement such standards, and the resulting inequality, which scholars have long recognised, remains a significant obstacle to sustainable development, since it undermines both economic growth and social cohesion.";
+
+const BRL = [
+  ["S","整句","#98a1b3"], ["主句","主句","#d97706"], ["从句","各类从句","#6a5ae0"], ["并列分句","并列分句","#c2418c"],
+  ["NP","名词短语","#8e4ec6"], ["VP","动词短语","#3e6ff0"], ["PP","介词短语","#2f9e63"],
+  ["AdjP","形容词短语","#0e9f9b"], ["AdvP","副词短语","#b45309"], ["不定式/动名词/分词","非谓语短语","#db2777"]
+];
+const CN = { S:"整句", "主句":"主句", "从句":"从句", "并列分句":"并列分句", NP:"名词短语", VP:"动词短语", PP:"介词短语", AdjP:"形容词短语", AdvP:"副词短语", "不定式短语":"不定式短语", "动名词短语":"动名词短语", "分词短语":"分词短语" };
+
+let state = { results: [], vocab: new Map(), busy: false, aborted: false, ctrl: null };
+
+/* ---------- 基础 ---------- */
+function esc(s){ return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function normKey(w){ return String(w).replace(/^[\"'\(（【\[«《]+|[\"'\)）】\]»》.,;:!?…]+$/g,"").toLowerCase(); }
+function chunk(arr,n){ const out=[]; for(let i=0;i<arr.length;i+=n) out.push(arr.slice(i,i+n)); return out; }
+
+function splitRawSentences(text){
+  const re = /(?<=[.!?…])\s+(?=["'“”A-Za-z0-9(（])/g;
+  const ranges = [];
+  let last = 0, m;
+  while((m = re.exec(text))){
+    const cut = m.index + 1;
+    ranges.push({ raw: text.slice(last, cut) });
+    last = cut;
+  }
+  ranges.push({ raw: text.slice(last) });
+  const out = [];
+  for(const r of ranges){
+    if(!r.raw.trim().length) continue;
+    const prev = out[out.length-1];
+    if(prev && /\b(?:Mr|Mrs|Ms|Dr|Prof|Sr|Jr|St|vs|etc|e\.g|i\.e|No|Fig|Vol|Inc|Ltd|Co|Corp|Dept|Univ|Capt|Col|Lt|Sgt|Rev|Gen)\.\s*$/i.test(prev.raw)){
+      prev.raw += r.raw;
+      continue;
+    }
+    out.push(r);
+  }
+  return out;
+}
+
+/* ---------- 设置 ---------- */
+function ddSet(v){
+  $("modelSel").value = v;
+  const opt = [...$("modelSel").options].find(o=>o.value===v);
+  if(opt) $("ddTxt").textContent = opt.textContent;
+  document.querySelectorAll("#ddList .dd-opt").forEach(o=>o.classList.toggle("on", o.dataset.v === v));
+}
+function loadSettings(){
+  $("apiKey").value = localStorage.getItem("dsg_key") || "";
+  const m = localStorage.getItem("dsg_model") || "flash";
+  $("modelSel").value = m;
+  ddSet(m);
+}
+$("ddBtn").onclick = e=>{
+  e.stopPropagation();
+  $("dd").classList.toggle("open");
+};
+$("ddList").addEventListener("click", e=>{
+  const o = e.target.closest(".dd-opt");
+  if(!o) return;
+  ddSet(o.dataset.v);
+  $("dd").classList.remove("open");
+});
+document.addEventListener("click", e=>{
+  if(!e.target.closest("#dd")) $("dd").classList.remove("open");
+});
+$("ddList").addEventListener("mousedown", e=>e.preventDefault());
+$("btnSave").onclick = () => {
+  localStorage.setItem("dsg_key", $("apiKey").value.trim());
+  localStorage.setItem("dsg_model", $("modelSel").value);
+  flashBtn($("btnSave"), "已保存");
+};
+function flashBtn(btn, txt){ const o=btn.textContent; btn.textContent=txt; setTimeout(()=>btn.textContent=o, 1200); }
+
+/* ---------- 提示词 ---------- */
+const SYSTEM = `你是资深英语语法学家和考研英语教学专家。用户给你英语句子（可能含长难句），你输出严格的 JSON（不要 markdown 代码块、不要任何多余文字），字段如下：
+
+{
+  "s": "原句（与输入完全一致）",
+  "trans": "整句参考译文（中文，翻译自然通顺，考研翻译风格）",
+  "tips": ["该句语法结构要点或考点（字符串数组，每条一个点，如'Whereas 引导让步/对比状语从句'、'subject to 此处=使遭受'）"],
+  "tree": "整句的中括号嵌套结构标注。例：[S [主句 [NP The majority] [PP of workers] [VP are subject] ] [SC that ... ] ]。标签只允许：S、主句、并列分句、定语从句、状语从句、宾语从句、主语从句、表语从句、同位语从句、NP、VP、PP、AdjP、AdvP、不定式短语、动名词短语、分词短语。括号内的文字必须逐词使用原句原文（顺序一致，不得增删改任何词），S 必须包裹整句，各层必须正确嵌套、不得交叉。",
+  "clauses": [
+    {"type":"主句/定语从句/状语从句/宾语从句/主语从句/表语从句/同位语从句/并列分句…", "structure":"S+V+O 或 S+V+O+O 等", "parts":{"S":"主语文本","V":"谓语文本","O":"宾语文本","C":"表语/补语文本","Adv":"状语文本","宾语从句":"…"}}
+  ],
+  "phrases": [
+    {"type":"NP/VP/PP/AdjP/AdvP/不定式短语/动名词短语/分词短语/名词性从句", "text":"短语原文", "head":"中心词", "role":"在句中的作用，如 主语/宾语/定语/状语", "def":"短语释义（中文），如 使遭受；服从", "usage":"特殊用法或固定搭配说明（无则空字符串）", "modifies":"所修饰的对象（仅修饰性成分填：PP/AdjP/AdvP/定语从句/状语从句/分词短语/不定式等；如 of workers 修饰 majority，in the room 修饰 NP 中心词），非修饰成分填空字符串"}
+  ],
+  "words": [
+    {"w":"句中每个单词（标点可附在词后）", "pos":"词性（中文，如 名词/动词/形容词…）", "func":"句子成分（主语/谓语/宾语/表语/定语/状语/补语/插入语/连接词/冠词/介词/从句引导词/助动词）", "def":"常用释义（中文，写 1~2 个最常用义）", "morph":"屈折或派生形态分析；如 play+-s(第三人称单数现在时)、environment+-al(形容词后缀)；无则填空字符串", "usage":"熟词生义 / 固定搭配 / 特殊用法说明（无则空字符串），如 subject：使遭受", "note":"考研考点提示（考研高频/易混等，无则空字符串）", "modifies":"所修饰的对象（仅修饰性单词填：形容词/副词/分词/定语/状语等，如 strict 修饰 regulations、resulting 修饰 inequality），非修饰词填空字符串"}
+  ],
+  "points": [
+    {"text":"短语、搭配或难点", "type":"固定搭配|熟词生义|考研高频|长难句", "note":"解释与记忆提示"}
+  ]
+}
+
+硬性要求：
+- words 必须覆盖句中每一个单词，顺序与原文一致。
+- tree 中每个中括号内的文字与 s 中对应原文必须逐字一致。
+- trans 和 tips 必须为每个句子提供；def 必须为每个词提供。
+- clauses 至少一个主句；有从句必须单独列出并标注类型；并列分句用 type:"并列分句"。
+- morph 重点分析屈折（时态/语态/单复数/比较级/分词/三单）与派生（词根+前缀/后缀，说明词性变化与含义）。
+- 每个修饰性成分（PP/AdjP/AdvP/定语从句/状语从句/分词短语/不定式等短语）和每个修饰性单词（形容词/副词/分词/定语/状语）必须填写 modifies 说明其修饰的对象（如 of workers 修饰 majority、strict 修饰 regulations）。
+- 熟词生义必须指出考研常见生僻义，如 address=处理、subject=使遭受、weather=经受、observe=遵守。
+- 考研高频词在 note 或 points 中标 type:"考研高频" 并给记忆提示。
+- 全部解释用中文。若句子极简单，也照常输出所有字段。`;
+
+function buildMessages(sentences){
+  const list = sentences.map((s,i)=>`${i+1}. ${s}`).join("\n");
+  return [
+    { role:"system", content: SYSTEM },
+    { role:"user", content: `请分析以下 ${sentences.length} 个英语句子，输出 JSON 数组（不是对象！），数组每个元素是一个句子的分析对象（结构同上）。\n\n${list}\n\n只输出 JSON 数组，不要任何其他文字。` }
+  ];
+}
+
+/* ---------- API ---------- */
+async function callDeepSeek(messages){
+  const key = $("apiKey").value.trim();
+  if(!key) throw new Error("请先填写 DeepSeek API Key");
+  const pro = $("modelSel").value === "pro";
+  state.ctrl = new AbortController();
+  const body = { model: pro ? "deepseek-reasoner" : "deepseek-chat", messages, max_tokens: 8192, stream:false };
+  if(!pro) body.temperature = 0.3;
+  const res = await fetch(API_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":"Bearer "+key },
+    body: JSON.stringify(body),
+    signal: state.ctrl.signal
+  });
+  if(!res.ok){
+    let msg = "HTTP " + res.status;
+    try{ const j = await res.json(); msg = j.error?.message || msg; }catch(e){}
+    if(res.status===401) msg += "（API Key 无效）";
+    if(res.status===402) msg += "（余额不足）";
+    throw new Error(msg);
+  }
+  const j = await res.json();
+  const content = j.choices?.[0]?.message?.content || "";
+  if(!content) throw new Error("模型返回为空，请重试");
+  return { content, usage: j.usage || {} };
+}
+
+function parseJSON(text){
+  let t = text.trim().replace(/^```json\s*/i,"").replace(/```\s*$/,"");
+  const s = t.indexOf("["), o = t.indexOf("{");
+  let start = -1;
+  if(s>=0 && (o<0 || s<o)) start = s; else if(o>=0) start = o;
+  const end = Math.max(t.lastIndexOf("]"), t.lastIndexOf("}"));
+  if(start>=0 && end>start) t = t.slice(start, end+1);
+  const data = JSON.parse(t);
+  if(Array.isArray(data)) return data;
+  return [data];
+}
+
+/* ---------- 括号结构 ---------- */
+function brkClass(label){
+  const l = label || "";
+  if(l === "S") return "S";
+  if(l === "主句") return "主句";
+  if(l === "并列分句") return "并列分句";
+  if(l.includes("从句")) return "从句";
+  if(l.startsWith("NP") || l.includes("名词")) return "NP";
+  if(l.startsWith("VP") || l.includes("动词")) return "VP";
+  if(l.startsWith("PP") || l.includes("介词")) return "PP";
+  if(l.startsWith("Adj")) return "AdjP";
+  if(l.startsWith("Adv")) return "AdvP";
+  if(l.includes("不定式")) return "不定式短语";
+  if(l.includes("动名词")) return "动名词短语";
+  if(l.includes("分词")) return "分词短语";
+  return "S";
+}
+function cnName(label){
+  if((label||"").includes("从句")) return label;
+  return CN[brkClass(label)] || label;
+}
+
+function parseTree(str){
+  const tokens = [];
+  let buf = "", i = 0;
+  const flush = ()=>{ if(buf.trim()){ tokens.push({ t:"text", w: buf.trim() }); } buf=""; };
+  while(i < str.length){
+    const c = str[i];
+    if(c === "["){
+      const m = /^\[\s*([^\s\]]+)\s*/.exec(str.slice(i));
+      if(m){ flush(); tokens.push({ t:"open", label: m[1] }); i += m[0].length; continue; }
+      buf += c; i++;
+    } else if(c === "]"){
+      flush(); tokens.push({ t:"close" }); i++;
+    } else { buf += c; i++; }
+  }
+  flush();
+  const treeWords = [];
+  for(const t of tokens) if(t.t === "text") treeWords.push(...t.w.split(/\s+/).filter(Boolean));
+  const groups = [], stack = [];
+  let cur = 0;
+  for(const t of tokens){
+    if(t.t === "text"){ cur += t.w.split(/\s+/).filter(Boolean).length; }
+    else if(t.t === "open"){ stack.push({ label: t.label, start: cur }); }
+    else { const g = stack.pop(); if(g) groups.push({ label: g.label, start: g.start, end: Math.max(g.start, cur-1) }); }
+  }
+  return { tokens, treeWords, groups };
+}
+
+function findSpan(words, text, hint){
+  const parts = String(text||"").split(/\s+/).filter(Boolean).map(normKey);
+  if(!parts.length) return null;
+  const n = words.length;
+  if(!hint){
+    for(let i=0; i+parts.length<=n; i++){
+      let ok = true;
+      for(let j=0;j<parts.length;j++){ if(normKey(words[i+j]) !== parts[j]){ ok = false; break; } }
+      if(ok) return [i, i+parts.length-1];
+    }
+    return null;
+  }
+  const hits = [];
+  for(let i=0; i+parts.length<=n; i++){
+    let ok = true;
+    for(let j=0;j<parts.length;j++){ if(normKey(words[i+j]) !== parts[j]){ ok = false; break; } }
+    if(ok){
+      const s=i, e=i+parts.length-1;
+      const ov = Math.min(e,hint[1]) - Math.max(s,hint[0]) + 1;
+      hits.push([s,e,ov]);
+    }
+  }
+  if(!hits.length) return null;
+  hits.sort((a,b)=> b[2]-a[2] || a[0]-b[0]);
+  return [hits[0][0], hits[0][1]];
+}
+function segsFrom(res, rawWords){
+  const clauses = [];
+  (res.clauses||[]).forEach(c=>{
+    const spans = Object.values(c.parts||{}).map(t=>findSpan(rawWords, t)).filter(Boolean);
+    if(!spans.length) return;
+    clauses.push({ label: c.type || "主句", start: Math.min(...spans.map(x=>x[0])), end: Math.max(...spans.map(x=>x[1])) });
+  });
+  const segs = [...clauses];
+  (res.phrases||[]).forEach(p=>{
+    const sp = findSpan(rawWords, p.text);
+    if(!sp) return;
+    for(const c of clauses){
+      const crossing = !(sp[1] < c.start || sp[0] > c.end || (sp[0] >= c.start && sp[1] <= c.end));
+      if(crossing) return;
+    }
+    segs.push({ label: p.type || "S", start: sp[0], end: sp[1] });
+  });
+  return segs;
+}
+
+function renderChunk(idx, rawChunk, res){
+  const pnew = /^\s*\n/.test(rawChunk);
+  const toks = rawChunk.split(/(\s+)/);
+  const rawWords = toks.filter(t=>t.trim());
+  const wmap = {};
+  const wocc = {};
+  (res.words||[]).forEach(w=>{
+    const k = normKey(w.w);
+    const oi = wocc[k] || 0; wocc[k] = oi + 1;
+    (wmap[k] || (wmap[k]=[]))[oi] = w;
+  });
+
+  let groups = [];
+  const tree = res.tree ? parseTree(res.tree) : { tokens:[], treeWords:[], groups:[] };
+  if(tree.treeWords.length === rawWords.length){
+    let match = 0;
+    tree.treeWords.forEach((tw,i)=>{ if(normKey(tw) === normKey(rawWords[i])) match++; });
+    if(match >= rawWords.length * 0.8) groups = tree.groups;
+  }
+  const cov = groups.length ? groups.reduce((a,g)=>a + g.end - g.start + 1, 0) / rawWords.length : 0;
+  if(cov < 0.55) groups = segsFrom(res, rawWords);
+
+  const openAt = new Map(), closeAt = new Map();
+  groups.forEach((g,i)=>{
+    if(g.start <= g.end && g.start < rawWords.length){
+      if(!openAt.has(g.start)) openAt.set(g.start,[]);
+      if(!closeAt.has(g.end)) closeAt.set(g.end,[]);
+      openAt.get(g.start).push({ i, span: g.end - g.start });
+      closeAt.get(g.end).push({ i, span: g.end - g.start });
+    }
+  });
+  openAt.forEach(a=>a.sort((x,y)=>y.span - x.span));
+  closeAt.forEach(a=>a.sort((x,y)=>x.span - y.span));
+
+  let wi = 0, html = "", toc = new Map();
+  let lastT = -1;
+  for(let ti=0; ti<toks.length; ti++) if(toks[ti].trim()) lastT = ti;
+  for(let ti=0; ti<toks.length; ti++){
+    const t = toks[ti];
+    if(!t.trim()){ if(ti < lastT) html += esc(t); continue; }
+    if(openAt.has(wi)){ for(const o of openAt.get(wi)){ const g = groups[o.i]; const cls = brkClass(g.label); html += `<span class="brk brk-${cls}" data-cls="${cls}" data-s="${idx}" data-g="${o.i}"><b class="ob">[</b>`; } }
+    const key = normKey(t);
+    const oi = toc.get(key) || 0; toc.set(key, oi + 1);
+    html += `<span class="tok" data-s="${idx}" data-w="${key}" data-wi="${oi}">${esc(t)}</span>`;
+    if(closeAt.has(wi)){ for(const o of closeAt.get(wi)){ html += `<b class="cb">]</b><span class="rb">${esc(groups[o.i].label)}</span></span>`; } }
+    wi++;
+  }
+  return { html, wmap, rawWords, groups, treeTokens: tree.tokens, pnew };
+}
+
+/* ---------- 渲染 ---------- */
+function buildTreeHtml(res, markG){
+  const rawWords = res.rawWords, tokens = res.treeTokens;
+  let cur = 0, html = "";
+  for(const t of tokens){
+    if(t.t === "open"){ html += `<span class="tr-${brkClass(t.label)}">[<sup>${esc(t.label)}</sup>`; }
+    else if(t.t === "close"){ html += "]</span>"; }
+    else {
+      const n = t.w.split(/\s+/).filter(Boolean).length;
+      const txt = rawWords.slice(cur, cur+n).join(" ");
+      const g = markG != null ? res.groups[markG] : null;
+      const hit = g && g.start <= cur+n-1 && cur <= g.end;
+      html += (hit ? `<mark>${esc(txt)}</mark>` : esc(txt)) + " ";
+      cur += n;
+    }
+  }
+  return html;
+}
+
+/* ---------- 右侧栏点击详情 ---------- */
+function colorOf(cls){ const e = BRL.find(x=>x[0]===cls); return e ? e[2] : "#98a1b3"; }
+
+function matchPhrase(r, g){
+  const words = r.rawWords;
+  const hint = [g.start, g.end];
+  let best = null, bestScore = -1;
+  for(const p of (r.res.phrases||[])){
+    const sp = findSpan(words, p.text, hint);
+    if(!sp) continue;
+    let score;
+    if(sp[0] === g.start && sp[1] === g.end) score = 4 + (sp[1]-sp[0]);
+    else if(sp[0] <= g.start && sp[1] >= g.end) score = 3 + (sp[1]-sp[0]);
+    else if(sp[0] >= g.start && sp[1] <= g.end) score = 2 + (sp[1]-sp[0]);
+    else continue;
+    const overlap = Math.min(sp[1],g.end) - Math.max(sp[0],g.start) + 1;
+    score += overlap;
+    if(score > bestScore){ bestScore = score; best = p; }
+  }
+  return best;
+}
+function parentOf(r, gid){
+  const g = r.groups[gid];
+  if(!g) return null;
+  let par = null;
+  for(const p of r.groups){
+    if(p === g) continue;
+    if(p.start <= g.start && p.end >= g.end && (p.end - p.start) > (g.end - g.start)){
+      if(!par || (p.end-p.start) < (par.end-par.start)) par = p;
+    }
+  }
+  return par;
+}
+function modifiedBy(r, gid, p){
+  const g = r.groups[gid];
+  if(!g) return "";
+  const cls = brkClass(g.label);
+  const isMod = ["PP","AdjP","AdvP","不定式短语","动名词短语","分词短语","从句"].includes(cls);
+  if(!isMod) return "";
+  if(p && p.modifies) return `修饰：${esc(p.modifies)}`;
+  const par = parentOf(r, gid);
+  if(par){
+    const ptxt = r.rawWords.slice(par.start, par.end+1).join(" ");
+    return `修饰：[${esc(par.label)}] ${esc(ptxt)}`;
+  }
+  return "";
+}
+
+function kv(title, cls, body){
+  return `<div class="kv ty-${cls}"><div class="k-lb">${title}</div>${body}</div>`;
+}
+
+function detailWord(r, key, wi){
+  const arr = r.wmap[key] || [];
+  const w = arr[wi] || arr[0] || { w:key, pos:"", func:"", def:"", morph:"", usage:"", note:"" };
+  let h = `<div class="kv"><div class="wd">${esc(w.w)}</div>`;
+  if(w.pos) h += ` <span class="chip pos">${esc(w.pos)}</span>`;
+  if(w.func) h += ` <span class="chip role">${esc(w.func)}</span>`;
+  h += `</div>`;
+  if(w.note) h += kv("考点提示","note", esc(w.note));
+  if(w.def) h += kv("释义","def", esc(w.def));
+  if(w.modifies) h += kv("修饰对象","mod", esc(w.modifies));
+  if(w.usage) h += kv("特殊用法","use", esc(w.usage));
+  if(w.morph) h += kv("屈折 / 派生","morph", esc(w.morph));
+  return h;
+}
+function matchClause(r, g){
+  const words = r.rawWords;
+  let best = null, bestScore = 0;
+  for(const c of (r.res.clauses||[])){
+    const spans = Object.values(c.parts||{}).map(t=>findSpan(words, t)).filter(Boolean);
+    if(!spans.length) continue;
+    const s = Math.min(...spans.map(x=>x[0])), e = Math.max(...spans.map(x=>x[1]));
+    const inside = s >= g.start && e <= g.end;
+    const overlap = Math.min(e,g.end) - Math.max(s,g.start) + 1;
+    const score = (inside ? 3 : 0) + (overlap || 0);
+    if(score > bestScore){ bestScore = score; best = { c, spans }; }
+  }
+  return best;
+}
+function detailGroup(r, gid){
+  const g = r.groups[gid];
+  if(!g) return "";
+  const cls = brkClass(g.label);
+  const text = r.rawWords.slice(g.start, g.end+1).join(" ");
+  let h = kv("成分","head", `<span style="color:${colorOf(cls)}"><b>[${esc(g.label)}]</b></span> ${esc(cnName(g.label))}`);
+  h += kv("原句片段","head", `<span style="font-family:Georgia,serif">${esc(text)}</span>`);
+  if(cls === "S" || cls === "主句" || cls === "并列分句" || cls === "从句"){
+    const mc = matchClause(r, g);
+    if(mc){
+      if(mc.c.structure) h += kv("句子结构","def", esc(mc.c.structure));
+      const ps = Object.entries(mc.c.parts||{});
+      if(ps.length){
+        h += kv("成分拆分","head", ps.map(([k,v])=>`<div style="margin-top:3px"><b style="color:var(--accent)">${esc(k)}</b>：${esc(v)}</div>`).join(""));
+      }
+    }
+    return h;
+  }
+  const p = matchPhrase(r, g);
+  if(p && p.role) h += kv("作用","def", esc(p.role));
+  const mod = modifiedBy(r, gid, p);
+  if(mod) h += kv("修饰对象","mod", mod);
+  if(p && p.def) h += kv("释义","def", esc(p.def));
+  if(p && p.usage) h += kv("特殊用法","use", esc(p.usage));
+  return h;
+}
+function detailSentence(r){
+  const res = r.res;
+  let h = kv("原句","head", esc(r.sentence));
+  h += kv("参考译文","def", esc(res.trans || "无"));
+  return h;
+}
+
+function showDetail(html){
+  $("sideDetail").innerHTML = `<div class="sd-sub">详情<span class="sp"></span><a href="javascript:clearDetail()" style="float:right">关闭</a></div>` + html;
+  $("sideDetail").scrollIntoView({ block:"nearest" });
+}
+function clearDetail(){ $("sideDetail").innerHTML = `<div class="empty">点击原文中的单词或结构，释义显示在这里。</div>`; }
+
+document.addEventListener("click", e=>{
+  const sm = e.target.closest(".s-more");
+  const tok = e.target.closest(".tok");
+  const brk = e.target.closest(".brk");
+  const r = sm ? state.results[+sm.dataset.s]
+         : tok ? state.results[+tok.dataset.s]
+         : brk ? state.results[+brk.dataset.s]
+         : null;
+  if(!r) return;
+  document.querySelectorAll(".sel").forEach(el=>el.classList.remove("sel"));
+  if(sm) showDetail(detailSentence(r));
+  else if(tok){ tok.classList.add("sel"); showDetail(detailWord(r, tok.dataset.w, +(tok.dataset.wi||0))); }
+  else { brk.classList.add("sel"); showDetail(detailGroup(r, +brk.dataset.g)); }
+});
+
+function renderVocabSide(){
+  const area = $("vocabArea");
+  const count = $("sideCount");
+  const items = [...state.vocab.values()];
+  count.textContent = items.length ? `${items.length} 条` : "";
+  if(!items.length){ area.innerHTML = `<div class="empty">暂无数据</div>`; return; }
+  area.innerHTML = `<table><tr><th style="width:22%">词汇 / 短语</th><th style="width:18%">类别</th><th>释义与考点提示</th></tr>` +
+    items.map(v=>`<tr><td><span class="w-en">${esc(v.w)}</span></td><td><span class="tag tg-${esc(v.type)}">${esc(v.type)}</span></td><td>${esc(v.note)}</td></tr>`).join("") + `</table>`;
+}
+
+function collectGlobal(r){
+  (r.res.points||[]).forEach(p=>{
+    let type = p.type || "其他";
+    if(!["固定搭配","熟词生义","考研高频","长难句"].includes(type)) type = "其他";
+    const key = normKey(p.text);
+    if(!state.vocab.has(key)) state.vocab.set(key, { w:p.text, type, note:p.note||"" });
+  });
+}
+
+/* ---------- 交互（右侧面板） ---------- */
+function flashWords(sIdx, phrase){
+  const el = $("s-"+sIdx);
+  if(!el) return;
+  const toks = [...el.querySelectorAll(".tok")];
+  const norm = t => t.replace(/[^\p{L}\p{N}’-]/gu,"").toLowerCase();
+  const words = toks.map(t=>norm(t.textContent));
+  const target = norm(phrase);
+  let hit = null;
+  for(let i=0;i<words.length && !hit;i++){
+    let acc = "";
+    for(let j=i;j<words.length && acc.length<=target.length;j++){
+      acc += words[j];
+      if(acc === target){ hit=[i,j]; break; }
+    }
+  }
+  el.scrollIntoView({behavior:"smooth", block:"center"});
+  el.classList.add("flash");
+  setTimeout(()=>el.classList.remove("flash"), 1800);
+  if(hit){
+    toks.slice(hit[0], hit[1]+1).forEach(t=>t.classList.add("flash"));
+    setTimeout(()=>toks.forEach(t=>t.classList.remove("flash")), 1800);
+  }
+}
+
+/* ---------- 主流程 ---------- */
+function setBusy(b){
+  state.busy = b;
+  $("btnAnalyze").disabled = b;
+  $("btnStop").disabled = !b;
+  $("btnSample").disabled = b;
+}
+function progress(pct, txt){
+  $("progress").classList.add("show");
+  $("progressBar").style.width = pct + "%";
+  $("progressText").textContent = txt;
+}
+function shrinkInput(){
+  const t = $("textInput");
+  t.style.height = "auto";
+  t.style.height = Math.min(t.scrollHeight, 110) + "px";
+}
+
+async function analyze(){
+  const text = $("textInput").value;
+  const chunks = splitRawSentences(text);
+  const units = chunks.map(c=>({ ...c, norm: c.raw.replace(/\s+/g," ").trim() }))
+                      .filter(u=>u.norm);
+  units.forEach(u=>{ u.todo = /[A-Za-z]/.test(u.norm); });
+  if(!units.length){ alert("请输入英语内容"); return; }
+  const key = $("apiKey").value.trim();
+  if(!key){ alert("请先在右上角填写 DeepSeek API Key（platform.deepseek.com）"); $("apiKey").focus(); return; }
+  localStorage.setItem("dsg_key", key);
+  localStorage.setItem("dsg_model", $("modelSel").value);
+
+  state.results = []; state.vocab = new Map();
+  state.tokens = { prompt: 0, completion: 0 };
+  state.aborted = false;
+  $("textArea").innerHTML = "";
+  $("textArea").style.display = "block";
+  clearDetail();
+  setBusy(true);
+  const t0 = Date.now();
+  const pro = $("modelSel").value === "pro";
+  const batchSize = pro ? 2 : 3;
+  const batches = chunk(units, batchSize);
+  let done = 0;
+  const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+  for(let bi=0; bi<batches.length; bi++){
+    if(state.aborted) break;
+    const b = batches[bi];
+    for(const u of b.filter(x=>!x.todo)){
+      $("textArea").insertAdjacentHTML("beforeend", `<div class="s-wrap s-raw">${esc(u.raw)}</div>`);
+    }
+    const todo = b.filter(x=>x.todo);
+    let queue = todo, attempt = 0;
+    while(queue.length && attempt < 4 && !state.aborted){
+      attempt++;
+      const sub = attempt === 1 ? queue : [queue[0]];
+      progress((bi/batches.length)*100, `正在分析第 ${done+1}~${Math.min(done + (attempt===1 ? queue.length : 1), units.length)}/${units.length} 句（批次 ${bi+1}/${batches.length}${attempt>1 ? ` · 逐句重试 ${attempt-1}` : ""}）…`);
+      const okIdx = new Set();
+      try{
+        const { content: raw, usage } = await callDeepSeek(buildMessages(sub.map(u=>u.norm)));
+        state.tokens.prompt += usage.prompt_tokens || 0;
+        state.tokens.completion += usage.completion_tokens || 0;
+        let arr = parseJSON(raw);
+        if(!Array.isArray(arr)) arr = [arr];
+        for(let k=0; k<sub.length; k++){
+          const obj = arr[k];
+          if(!obj || typeof obj !== "object" || !obj.s || !Array.isArray(obj.words) || !obj.words.length) continue;
+          const unit = sub[k];
+          const r = renderChunk(done, unit.raw, obj);
+          state.results.push({ res: obj, sentence: unit.norm, ...r });
+          $("textArea").insertAdjacentHTML("beforeend", `<span id="s-${done}" class="s-wrap${r.pnew ? " pnew" : ""}">${r.html}<span class="s-more" data-s="${done}">译文</span></span>`);
+          okIdx.add(k);
+          collectGlobal({ res: obj });
+          done++;
+        }
+      }catch(err){
+        if(state.aborted) break;
+        progress((bi/batches.length)*100, `批次失败：${err.message}${attempt < 4 ? "，正在逐句重试…" : ""}`);
+      }
+      const remaining = [];
+      if(attempt === 1){
+        queue.forEach((u,k)=>{ if(!okIdx.has(k)) remaining.push(u); });
+      }else{
+        if(!okIdx.has(0)) remaining.push(queue[0]);
+        remaining.push(...queue.slice(1));
+      }
+      queue = remaining;
+      if(queue.length && attempt < 4 && !state.aborted) await sleep(1200);
+    }
+    for(const u of queue){
+      $("textArea").insertAdjacentHTML("beforeend", `<div class="s-wrap s-raw">${esc(u.raw)}<span class="s-fail">[解析失败]</span></div>`);
+    }
+    await sleep(250);
+  }
+
+  if(state.aborted){ $("progressText").textContent = "已停止"; }
+  else{
+    const tokN = state.tokens.prompt + state.tokens.completion;
+    const rates = pro ? [0.55, 2.19] : [0.27, 1.10];
+    const cost = (state.tokens.prompt/1e6)*rates[0] + (state.tokens.completion/1e6)*rates[1];
+    progress(100, `完成：${done}/${units.length} 句 · Tokens ${tokN.toLocaleString()}（入 ${state.tokens.prompt.toLocaleString()} / 出 ${state.tokens.completion.toLocaleString()}）· 约 $${cost.toFixed(3)} · 用时 ${((Date.now()-t0)/1000).toFixed(1)}s`);
+    renderVocabSide();
+  }
+  shrinkInput();
+  if(!done && !state.aborted && !$("textArea").children.length){
+    $("textArea").innerHTML = `<div class="empty">没有成功解析出句子。请检查 API Key、网络，或换用 Pro 模型重试。原始失败信息见进度条。</div>`;
+  }
+  const tokN = state.tokens.prompt + state.tokens.completion;
+  const rates = pro ? [0.55, 2.19] : [0.27, 1.10];
+  const cost = (state.tokens.prompt/1e6)*rates[0] + (state.tokens.completion/1e6)*rates[1];
+  $("stats").textContent = done
+    ? `${done} 句 · ${state.results.reduce((a,r)=>a+(r.res.words||[]).length,0)} 词 · ${state.vocab.size} 个考点`
+    : "";
+  setBusy(false);
+}
+
+$("btnAnalyze").onclick = analyze;
+$("btnStop").onclick = ()=>{ state.aborted = true; if(state.ctrl) state.ctrl.abort(); };
+$("btnClear").onclick = ()=>{
+  $("textInput").value="";
+  $("textInput").style.height="";
+  $("textArea").style.display="none";
+  $("vocabArea").innerHTML=`<div class="empty">分析完成后，这里将汇总全文考研高频词、熟词生义与固定搭配。</div>`;
+  $("sideCount").textContent="";
+  $("stats").textContent="";
+  $("progress").classList.remove("show");
+  state.results=[]; state.vocab=new Map();
+  clearDetail();
+};
+$("btnSample").onclick = ()=>{ $("textInput").value = SAMPLE; };
+$("textInput").addEventListener("keydown", e=>{ if(e.ctrlKey && e.key==="Enter") analyze(); });
+
+loadSettings();
+</script>
+</body>
+</html>
