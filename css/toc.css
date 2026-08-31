@@ -1,188 +1,121 @@
+/* ================= 左侧目录 ================= */
 
-
-.left-toc-container{ 
-  top: 100px;
-  left: 1px;
+.left-toc-container {
+  display: none; /* 默认隐藏，仅当文章有目录项时由 JS 显示，避免无目录文章闪现 */
+  top: 90px;
+  left: 24px;
   bottom: 110px;
-  overflow-y: auto; /* 或者使用 overflow-y: scroll; */
-  max-height: -webkit-fill-available; /* 设置最大高度，可以根据需要进行调整 */
+  width: 260px;
+  overflow-y: auto;
   position: fixed;
-  scrollbar-width: none;
+  z-index: 100;
+  padding: 14px 12px 14px 6px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
 }
 
+/* 目录标题 */
+.left-toc-container #toc::before {
+  content: "目录";
+  display: block;
+  font-weight: 700;
+  font-size: 14px;
+  color: #444;
+  padding: 2px 14px 10px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  letter-spacing: 3px;
+}
+
+/* 滚动条 */
 .left-toc-container::-webkit-scrollbar {
-  width: 10px; /* 设置滚动条宽度 */
-  display: none;
+  width: 4px;
 }
-
 .left-toc-container::-webkit-scrollbar-thumb {
-  background-color: white; /* 设置滚动条拖动块的颜色 */
-  border-radius: 5px; /* 设置圆角 */
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
 }
-
 .left-toc-container::-webkit-scrollbar-track {
-  background-color: transparent; /* 设置滚动条轨道的颜色 */
+  background-color: transparent;
 }
 
-/* The Table of Contents container element */
-
-.tocify {
-  overflow: auto;
-  /* position: fixed;
-  left: -240px; */
-}
-
-/* sidebar */
-
-.bs-docs-sidebar {
-  /* top: 235px;
-  left: 1px; */
-}
-
-/* The Table of Contents is composed of multiple nested unordered lists.  These styles remove the default styling of an unordered list because it is ugly. */
-
-.tocify ul,
-.tocify li {
+/* 列表基础样式 */
+#toc ul,
+#toc li {
   list-style: none;
   margin: 0;
   padding: 0;
   border: none;
-  line-height: 30px;
+  /* 覆盖主题 .nav 的 flex 横向布局，确保目录项纵向排列 */
+  display: block;
+  flex-direction: column;
 }
 
-
-/* Top level header elements */
-
-.tocify-header {
-  text-indent: 10px;
-}
-
-
-/* Top level subheader elements.  These are the first nested items underneath a header element. */
-
-.tocify-subheader {
-  text-indent: 20px;
-  display: none;
-  border-left-width: 1px !important;
-}
-
-
-/* Makes the font smaller for all subheader elements. */
-
-.tocify-subheader li {
-  font-size: 12px;
-}
-
-
-/* Further indents second level subheader elements. */
-
-.tocify-subheader .tocify-subheader {
-  text-indent: 30px;
-}
-
-
-/* Further indents third level subheader elements. You can continue this pattern if you have more nested elements. */
-
-.tocify-subheader .tocify-subheader .tocify-subheader {
-  text-indent: 40px;
-}
-
-
-/* Twitter Bootstrap Override Style */
-
-.nav-list > li > a,
-.nav-list .nav-header {
-  margin: 0px;
-}
-
-
-/* Twitter Bootstrap Override Style */
-
-.nav-list > li > a {
-  padding: 5px;
-}
-
-
-
-
-
-/* all links */
-
-.bs-docs-sidebar .nav>li>a {
-  color: #999;
-  font-size: 13px;
+/* 目录链接通用 */
+#toc a.nav-link {
+  display: block;
+  color: #666;
+  font-size: 12.5px;
   font-weight: 400;
-  border-left: 4px solid transparent;
-  padding: 4px 20px;
-}
-
-
-/* nested links */
-
-.bs-docs-sidebar .nav .nav>li>a {
-  border-left-width: 2px;
-}
-
-.bs-docs-sidebar .nav .nav>ul>li>a {
-  border-left-width: 1px;
-}
-
-.bs-docs-sidebar .nav .nav>li>a {
-  padding-top: 1px;
-  padding-bottom: 1px;
-  padding-left: 30px;
-  font-size: 12px;
-}
-
-
-/* active & hover links */
-
-.bs-docs-sidebar .nav>.active>a,
-.bs-docs-sidebar .nav>li>a:hover,
-.bs-docs-sidebar .nav>li>a:focus {
-  color: #4f7ddf;
+  padding: 3px 10px;
+  margin: 1px 0;
+  border-radius: 6px;
+  border-left: 3px solid transparent;
   text-decoration: none;
-  background-color: transparent;
+  line-height: 1.6;
+  /* 完整显示题目，允许换行 */
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+}
+
+/* 一级章节项 */
+#toc > .nav-list > li > a.nav-link {
+  color: #333;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  margin: 3px 0 2px;
+}
+
+/* 二级及以下题目项：浅缩进，不向右拉太远 */
+#toc .tocify-subheader > li > a.nav-link {
+  color: #777;
+  font-size: 12px;
+  padding-left: 16px;
+}
+#toc .tocify-subheader .tocify-subheader > li > a.nav-link {
+  padding-left: 26px;
+}
+#toc .tocify-subheader .tocify-subheader .tocify-subheader > li > a.nav-link {
+  padding-left: 36px;
+}
+
+/* 悬停 */
+#toc a.nav-link:hover {
+  color: #4f7ddf;
+  background-color: rgba(79, 125, 223, 0.08);
   border-left-color: #4f7ddf;
 }
 
-
-/* all active links */
-
-.bs-docs-sidebar .nav>.active>a,
-.bs-docs-sidebar .nav>.active:hover>a,
-.bs-docs-sidebar .nav>.active:focus>a {
-  font-weight: 700;
+/* 当前章节高亮 */
+#toc li.tocify-item.active > a.nav-link {
+  color: #4f7ddf;
+  font-weight: 600;
+  background-color: rgba(79, 125, 223, 0.12);
+  border-left-color: #4f7ddf;
 }
 
-
-/* nested active links */
-
-.bs-docs-sidebar .nav .nav>.active>a,
-.bs-docs-sidebar .nav .nav>.active:hover>a,
-.bs-docs-sidebar .nav .nav>.active:focus>a {
-  font-weight: 500;
-}
-
-
-/* hide inactive nested list */
-
-.bs-docs-sidebar .nav ul.nav {
-  display: none;
-}
-
-
-/* show active nested list */
-
-.bs-docs-sidebar .nav>.active>ul.nav {
-  display: block;
-}
-
-@media screen and (max-width: 1104px) {
-  .bs-docs-sidebar {
-    display: none
+/* 窗口过窄时隐藏目录，避免遮挡文章 */
+@media screen and (max-width: 1400px) {
+  .left-toc-container {
+    display: none !important;
   }
-}
-.tocify-extend-page {
-    height: 10px !important;
 }

@@ -1,4 +1,168 @@
 <!DOCTYPE html>
+<html lang="zh-CN">
+    
+    <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport" />
+    <meta name="description" content="" />
+    <meta name="hexo-theme-A4" content="v2.0.1" />
+    <link rel="alternate icon" type="image/webp" href="/MySource/img/avatar.jpg">
+    <title>Ammonia</title>
+
+    
+        
+<link rel="stylesheet" href="/css/highlight/style1.css">
+
+        
+<link rel="stylesheet" href="/css/reset.css">
+
+        
+<link rel="stylesheet" href="/css/markdown.css">
+
+        
+<link rel="stylesheet" href="/css/fonts.css">
+
+         <!--注意：首页既不是post也不是page-->
+        
+
+        
+<link rel="stylesheet" href="/css/ui.css">
+
+        
+<link rel="stylesheet" href="/css/style.css">
+
+
+        
+            <!--返回顶部css-->
+            
+<link rel="stylesheet" href="/css/returnToTop.css">
+
+            
+<link rel="stylesheet" href="/css/unicons.css">
+
+        
+        
+            <!--目录-->
+            
+<link rel="stylesheet" href="/css/toc.css">
+
+        
+    
+
+    
+
+    
+<link rel="stylesheet" href="/css/lightgallery-bundle.min.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/custom.css">
+
+    
+
+    
+
+    <!-- <link rel="stylesheet" href="https://chinese-fonts-cdn.deno.dev/packages/lxgwwenkai/dist/LXGWWenKai-Regular/result.css" /> -->
+    <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/@chinese-fonts/lxgwwenkai@3.0.0/dist/LXGWWenKai-Regular/result.css' /> 
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+    
+    
+
+    
+    
+
+
+
+    
+
+    
+    
+
+
+
+
+    
+    
+
+
+    <body>
+        
+        
+            
+        
+        <div class="paper">
+
+            
+
+            
+                <div class="shadow-drop-2-bottom paper-main">
+                    
+
+
+<div class="header">
+    <div class="header-container">
+        <style>
+            .header-img {
+                width: 56px;
+                height: auto;
+                object-fit: cover; /* 保持图片比例 */
+                transition: transform 0.3s ease-in-out; 
+                border-radius: 50%; 
+            }
+            
+        </style>
+        <img 
+            alt="^-^" 
+            cache-control="max-age=86400" 
+            class="header-img" 
+            src="/MySource/img/avatar.jpg" 
+        />
+        <div class="header-content">
+            <a class="logo" href="/">Ammonia</a> 
+            <span class="description"></span> 
+        </div>
+    </div>
+    
+   
+    <ul class="nav">
+        
+            
+                <li><a href="/">首页</a></li>
+            
+        
+            
+                <li><a href="/list/">文章</a></li>
+            
+        
+            
+                <li><a href="/categories/">分类</a></li>
+            
+        
+    </ul>
+</div>
+
+                    
+                    
+
+                    
+                    
+
+                    <!--说明是文章post页面-->
+                    
+                        <div class="post-main">
+    
+
+    
+
+    
+
+    <div class="post-md">
+        
+            
+        
+        <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -818,7 +982,7 @@
             if (this.partWasDeleted && !p) {
                 // 部件被删除：从快照重建
                 const restored = JSON.parse(JSON.stringify(this.partSnapshot));
-                restored._subpaths = cloneVertexSubpaths(this.oldSubpaths);
+                restored._subpaths = this.oldSubpaths.map(sp => sp.map(v => ({x:v.x, y:v.y})));
                 restored.pathData = this.oldPathData;
                 delete restored._displayD;
                 if (restored.id >= nextId) nextId = restored.id + 1;
@@ -832,10 +996,10 @@
                 return;
             }
             if (!p) return;
-            p._subpaths = cloneVertexSubpaths(this.oldSubpaths);
+            p._subpaths = this.oldSubpaths.map(sp => sp.map(v => ({x:v.x, y:v.y})));
             p.pathData = this.oldPathData;
             delete p._displayD;
-                        vertexEditId = p.id;
+            vertexEditId = p.id;
             selectedVertex = (p._subpaths.length > 0 && p._subpaths[0].length > 0) ? { partId: p.id, si: 0, vi: 0 } : null;
             renderAll();
         }
@@ -856,45 +1020,14 @@
                 return;
             }
             if (!p) return;
-            p._subpaths = cloneVertexSubpaths(this.newSubpaths);
+            p._subpaths = this.newSubpaths.map(sp => sp.map(v => ({x:v.x, y:v.y})));
             p.pathData = this.newPathData;
             delete p._displayD;
-                        vertexEditId = p.id;
+            vertexEditId = p.id;
             selectedVertex = (p._subpaths.length > 0 && p._subpaths[0].length > 0) ? { partId: p.id, si: 0, vi: 0 } : null;
             renderAll();
         }
     }
-    class VertexMoveCommand extends Command {
-        constructor(partId, oldSubpaths, newSubpaths, oldPathData, newPathData, vertexInfo) {
-            super();
-            this.type = 'vertexMove';
-            this.partId = partId;
-            this.oldSubpaths = cloneVertexSubpaths(oldSubpaths);
-            this.newSubpaths = cloneVertexSubpaths(newSubpaths);
-            this.oldPathData = oldPathData;
-            this.newPathData = newPathData;
-            this.vertexInfo = vertexInfo || null;
-        }
-        restore(subpaths, pathData) {
-            const p = parts.find(x => x.id === this.partId);
-            if (!p) return;
-            p._subpaths = cloneVertexSubpaths(subpaths);
-            p.pathData = pathData;
-            delete p._displayD;
-            vertexEditId = p.id;
-            if (this.vertexInfo && p._subpaths[this.vertexInfo.si] && p._subpaths[this.vertexInfo.si][this.vertexInfo.vi]) {
-                selectedVertex = { partId: p.id, si: this.vertexInfo.si, vi: this.vertexInfo.vi };
-            } else if (p._subpaths.length > 0 && p._subpaths[0].length > 0) {
-                selectedVertex = { partId: p.id, si: 0, vi: 0 };
-            } else {
-                selectedVertex = null;
-            }
-            renderAll();
-        }
-        undo() { this.restore(this.oldSubpaths, this.oldPathData); }
-        redo() { this.restore(this.newSubpaths, this.newPathData); }
-    }
-
     function handleCropsAfterReset(p) {
         if (p.crops && p.crops.length > 0) {
             rebuildClipPath(p);
@@ -1324,7 +1457,7 @@
 
     canvas.addEventListener('mousedown', (e) => {
         // 如果点击的是顶点圆点，由顶点事件处理，这里不处理
-        if (e.target.closest('.vertex-dot') || e.target.closest('.vertex-handle-dot')) return;
+        if (e.target.closest('.vertex-dot')) return;
         const partEl = e.target.closest('.part');
         if (!partEl) {
             if (isCropping) {
@@ -1342,7 +1475,7 @@
             // 退出顶点编辑模式
             if (vertexEditId !== null) {
                 const oldP = parts.find(x => x.id === vertexEditId);
-                if (oldP) { delete oldP._subpaths; delete oldP._displayD; }
+                if (oldP && oldP._subpaths) delete oldP._subpaths;
                 vertexEditId = null;
             }
             selectedId = null;
@@ -2370,85 +2503,18 @@
         });
     }
 
-    /** 解析 SVG path，按 M 命令拆分为子路径数组（支持 M/L/C 绝对命令） */
+    /** 解析 SVG path，按 M 命令拆分为子路径数组 */
     function parsePathVertices(d) {
         const subpaths = [];
-        if (!d) return subpaths;
-        const tokens = d.match(/-?\d*\.?\d+(?:[eE][-+]?\d+)?|[a-zA-Z]/g) || [];
         let cur = null;
-        let i = 0;
-        while (i < tokens.length) {
-            const tok = tokens[i++];
-            const cmd = tok.toUpperCase();
-            if (cmd === 'M') {
-                if (i + 1 >= tokens.length) break;
-                cur = [{ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) }];
+        const reg = /([ML])\s*(-?[\d.]+)\s*[, ]\s*(-?[\d.]+)/g;
+        let m;
+        while ((m = reg.exec(d)) !== null) {
+            if (m[1] === 'M') {
+                cur = [];
                 subpaths.push(cur);
-                i += 2;
-            } else if (cmd === 'L') {
-                if (!cur || i + 1 >= tokens.length) { i += 2; continue; }
-                cur.push({ x: parseFloat(tokens[i]), y: parseFloat(tokens[i + 1]) });
-                i += 2;
-            } else if (cmd === 'C') {
-                if (!cur || i + 5 >= tokens.length) { i += 6; continue; }
-                // 三次贝塞尔曲线：前两对是控制点，第三对是曲线实际经过的终点
-                cur.push({ x: parseFloat(tokens[i + 4]), y: parseFloat(tokens[i + 5]) });
-                i += 6;
             }
-            // Z 等闭合命令忽略：闭合段由生成端处理，不再产生多余顶点
-        }
-        // 闭合路径最后一个顶点若与起点重合（如 Z 前的收尾 C 终点），去掉重复点
-        subpaths.forEach(sp => {
-            if (sp.length > 1) {
-                const a = sp[0], b = sp[sp.length - 1];
-                if (Math.abs(a.x - b.x) < EPS && Math.abs(a.y - b.y) < EPS) sp.pop();
-            }
-        });
-        return subpaths;
-    }
-
-    /** 解析带控制柄的 SVG path（M/L/C），返回钢笔式锚点数组 */
-    function parsePathAnchors(d) {
-        const subpaths = [];
-        if (!d) return subpaths;
-        const tokens = d.match(/-?\d*\.?\d+(?:[eE][-+]?\d+)?|[a-zA-Z]/g) || [];
-        let cur = null;
-        let i = 0;
-        const mkAnchor = (x, y) => ({ x, y, hix: 0, hiy: 0, hox: 0, hoy: 0 });
-        while (i < tokens.length) {
-            const tok = tokens[i++];
-            const cmd = tok.toUpperCase();
-            if (cmd === 'M') {
-                if (i + 1 >= tokens.length) break;
-                cur = [mkAnchor(parseFloat(tokens[i]), parseFloat(tokens[i + 1]))];
-                subpaths.push(cur);
-                i += 2;
-            } else if (cmd === 'L') {
-                if (!cur || i + 1 >= tokens.length) { i += 2; continue; }
-                const prev = cur[cur.length - 1];
-                const nx = parseFloat(tokens[i]), ny = parseFloat(tokens[i + 1]);
-                prev.hox = (nx - prev.x) / 3; prev.hoy = (ny - prev.y) / 3;
-                const next = mkAnchor(nx, ny);
-                next.hix = -prev.hox; next.hiy = -prev.hoy;
-                cur.push(next);
-                i += 2;
-            } else if (cmd === 'C') {
-                if (!cur || i + 5 >= tokens.length) { i += 6; continue; }
-                const prev = cur[cur.length - 1];
-                const c1x = parseFloat(tokens[i]), c1y = parseFloat(tokens[i + 1]);
-                const c2x = parseFloat(tokens[i + 2]), c2y = parseFloat(tokens[i + 3]);
-                const ex = parseFloat(tokens[i + 4]), ey = parseFloat(tokens[i + 5]);
-                prev.hox = c1x - prev.x; prev.hoy = c1y - prev.y;
-                const next = mkAnchor(ex, ey);
-                next.hix = c2x - ex; next.hiy = c2y - ey;
-                cur.push(next);
-                i += 6;
-            } else if (cmd === 'Z') {
-                if (cur && cur.length > 1 && Math.abs(cur[0].x - cur[cur.length - 1].x) < 1e-6 && Math.abs(cur[0].y - cur[cur.length - 1].y) < 1e-6) {
-                    const dup = cur.pop();
-                    cur[0].hix = dup.hix; cur[0].hiy = dup.hiy;
-                }
-            }
+            if (cur) cur.push({ x: parseFloat(m[2]), y: parseFloat(m[3]) });
         }
         return subpaths;
     }
@@ -2467,173 +2533,26 @@
         return parts.join(' ');
     }
 
-    /** ===== 自动贝塞尔拟合 + 钢笔式控制柄模型 ===== */
-    // 用少量锚点自动拟合原轮廓；每个锚点保存入/出控制柄相对偏移（hix/hiy, hox/hoy）。
-    // 移动锚点时控制柄随锚点平移，因此只有相邻两段曲线变化，其余点、线段保持不变。
-    // 自动拟合：先用保形 DP 抽出锚点，再用“尖角保护 + 向心 Catmull-Rom”生成控制柄。
-    // 锚点密度较高（0.001em≈0.4px@400），曲线段保持贝塞尔平滑，直角/折角不会被圆化。
-    const FIT_ANCHOR_TOL = 0.001;
-    const SMOOTH_ALPHA = 0.5;
-    const CORNER_DOT_MIN = 0.9;
-
-    function pointDist(a, b) {
-        return Math.hypot(a.x - b.x, a.y - b.y);
-    }
-
-    /** Douglas-Peucker 简化，返回保留点在原数组中的下标（保序） */
-    function simplifyPathIndices(pts, eps) {
-        const n = pts.length;
-        function recurse(i, j) {
-            if (j <= i + 1) return [i, j];
-            const a = pts[i], b = pts[j];
-            const dx = b.x - a.x, dy = b.y - a.y;
-            const lenSq = dx * dx + dy * dy;
-            let maxDist = 0, maxIdx = i + 1;
-            for (let k = i + 1; k < j; k++) {
-                const p = pts[k];
-                let d;
-                if (lenSq < 1e-12) {
-                    d = Math.hypot(p.x - a.x, p.y - a.y);
-                } else {
-                    d = Math.abs(dy * p.x - dx * p.y + b.x * a.y - b.y * a.x) / Math.sqrt(lenSq);
-                }
-                if (d > maxDist) { maxDist = d; maxIdx = k; }
-            }
-            if (maxDist > eps) {
-                const left = recurse(i, maxIdx);
-                const right = recurse(maxIdx, j);
-                return left.slice(0, -1).concat(right);
-            }
-            return [i, j];
-        }
-        return recurse(0, n - 1);
-    }
-
-    function smoothDist(a, b) {
-        const dx = b.x - a.x, dy = b.y - a.y;
-        return Math.pow(Math.max(Math.sqrt(dx * dx + dy * dy), 1e-6), SMOOTH_ALPHA);
-    }
-
-    function isCornerVertex(sp, i) {
-        const n = sp.length;
-        const p0 = sp[(i - 1 + n) % n], p1 = sp[i], p2 = sp[(i + 1) % n];
-        let e1x = p1.x - p0.x, e1y = p1.y - p0.y;
-        let e2x = p2.x - p1.x, e2y = p2.y - p1.y;
-        const l1 = Math.sqrt(e1x * e1x + e1y * e1y);
-        const l2 = Math.sqrt(e2x * e2x + e2y * e2y);
-        if (l1 < 1e-9 || l2 < 1e-9) return true;
-        e1x /= l1; e1y /= l1; e2x /= l2; e2y /= l2;
-        return (e1x * e2x + e1y * e2y) < CORNER_DOT_MIN;
-    }
-
-    function crTangent(sp, i, h1, h2) {
-        const n = sp.length;
-        const p0 = sp[(i - 1 + n) % n], p1 = sp[i], p2 = sp[(i + 1) % n];
-        const w = h2 / (h1 + h2), u = h1 / (h1 + h2);
-        return {
-            x: (p1.x - p0.x) / h1 * w + (p2.x - p1.x) / h2 * u,
-            y: (p1.y - p0.y) / h1 * w + (p2.y - p1.y) / h2 * u
-        };
-    }
-
-    /** 将一条闭合的原始轮廓拟合为钢笔式锚点数组（含入/出控制柄） */
-    function fitSubpathAnchors(sp) {
-        const pts = [];
-        for (const v of sp) {
-            const prev = pts[pts.length - 1];
-            if (!prev || pointDist(prev, v) > 1e-9) pts.push({ x: v.x, y: v.y });
-        }
-        if (pts.length > 1 && pointDist(pts[0], pts[pts.length - 1]) < 1e-9) pts.pop();
-        const n = pts.length;
-        if (n < 2) return [];
-        if (n === 2) {
-            const a = pts[0], b = pts[1];
-            const hx = (b.x - a.x) / 3, hy = (b.y - a.y) / 3;
-            return [
-                { x: a.x, y: a.y, hix: -hx, hiy: -hy, hox: hx, hoy: hy },
-                { x: b.x, y: b.y, hix: -hx, hiy: -hy, hox: hx, hoy: hy }
-            ];
-        }
-
-        const idxs = simplifyPathIndices(pts, FIT_ANCHOR_TOL);
-        let simple = idxs.map(i => pts[i]);
-        if (simple.length < 3) {
-            const step = Math.max(1, Math.floor(n / 24));
-            simple = pts.filter((_, i) => i % step === 0);
-        }
-        const m = simple.length;
-        if (m < 2) return [];
-        if (m === 2) {
-            const a = simple[0], b = simple[1];
-            const hx = (b.x - a.x) / 3, hy = (b.y - a.y) / 3;
-            return [
-                { x: a.x, y: a.y, hix: -hx, hiy: -hy, hox: hx, hoy: hy },
-                { x: b.x, y: b.y, hix: -hx, hiy: -hy, hox: hx, hoy: hy }
-            ];
-        }
-
-        const corner = simple.map((_, i) => isCornerVertex(simple, i));
-        return simple.map((p, i) => {
-            const prev = simple[(i - 1 + m) % m], next = simple[(i + 1) % m];
-            const hp = smoothDist(prev, p), hn = smoothDist(p, next);
-            let hox, hoy, hix, hiy;
-            if (corner[i]) {
-                hox = (next.x - p.x) / 3; hoy = (next.y - p.y) / 3;
-                hix = -(p.x - prev.x) / 3; hiy = -(p.y - prev.y) / 3;
-            } else {
-                const t = crTangent(simple, i, hp, hn);
-                hox = t.x * hn / 3; hoy = t.y * hn / 3;
-                hix = -t.x * hp / 3; hiy = -t.y * hp / 3;
-            }
-            return { x: p.x, y: p.y, hix, hiy, hox, hoy };
-        });
-    }
-
-    /** 清理重复锚点，保留控制柄字段 */
-    function cleanAnchorSubpath(sp) {
-        const out = [];
-        for (const v of sp) {
-            const prev = out[out.length - 1];
-            if (!prev || pointDist(prev, v) > 1e-9) {
-                out.push({ x: v.x, y: v.y, hix: v.hix || 0, hiy: v.hiy || 0, hox: v.hox || 0, hoy: v.hoy || 0 });
-            }
-        }
-        if (out.length > 1 && pointDist(out[0], out[out.length - 1]) < 1e-9) {
-            const dup = out.pop();
-            out[0].hix = dup.hix; out[0].hiy = dup.hiy;
-        }
-        return out;
-    }
-
-    /** 根据钢笔式锚点（含控制柄偏移）生成闭合三次贝塞尔 path d */
-    function subpathsToBezierPath(subpaths) {
+    /** 将子路径生成细分平滑路径 */
+    function subpathsToPathDisplay(subpaths) {
         if (!subpaths || subpaths.length === 0) return '';
+        const SUB = 6;
         const parts = [];
-        subpaths.forEach(raw => {
-            const sp = cleanAnchorSubpath(raw);
+        subpaths.forEach(sp => {
             const n = sp.length;
-            if (n < 1) return;
-            if (n === 1) { parts.push('M' + fmt(sp[0].x) + ',' + fmt(sp[0].y) + ' Z'); return; }
-            if (n === 2) {
-                parts.push('M' + fmt(sp[0].x) + ',' + fmt(sp[0].y) + ' L' + fmt(sp[1].x) + ',' + fmt(sp[1].y) + ' Z');
-                return;
-            }
+            if (n < 2) return;
             let d = 'M' + fmt(sp[0].x) + ',' + fmt(sp[0].y);
             for (let i = 0; i < n; i++) {
                 const a = sp[i], b = sp[(i + 1) % n];
-                const c1x = a.x + (a.hox || 0), c1y = a.y + (a.hoy || 0);
-                const c2x = b.x + (b.hix || 0), c2y = b.y + (b.hiy || 0);
-                d += ' C' + fmt(c1x) + ',' + fmt(c1y) + ' ' + fmt(c2x) + ',' + fmt(c2y) + ' ' + fmt(b.x) + ',' + fmt(b.y);
+                for (let j = 1; j <= SUB; j++) {
+                    const t = j / SUB;
+                    d += 'L' + fmt(a.x + (b.x - a.x) * t) + ',' + fmt(a.y + (b.y - a.y) * t);
+                }
             }
             d += ' Z';
             parts.push(d);
         });
         return parts.join(' ');
-    }
-
-    /** 编辑显示用：与提交路径一致，直接使用三次贝塞尔 */
-    function subpathsToPathDisplay(subpaths) {
-        return subpathsToBezierPath(subpaths);
     }
 
     /** 简化单个子路径的点 */
@@ -2643,43 +2562,14 @@
         return simplified.length >= 3 ? simplified : sp;
     }
 
-    /** 确保矢量部件有钢笔式可编辑锚点（已提交的贝塞尔直接复用控制柄；原始轮廓自动拟合） */
-    function ensureVertexSubpaths(p) {
-        if (!p || p.type !== 'vector') return null;
-        if (!p._subpaths || p._subpaths.length === 0 || p._subpaths.every(s => s.length < 1)) {
-            const alreadyBezier = typeof p.pathData === 'string' && p.pathData.indexOf('C') !== -1;
-            if (alreadyBezier) {
-                p._subpaths = parsePathAnchors(p.pathData).filter(s => s.length >= 1);
-            } else {
-                const rawSubs = parsePathVertices(p.pathData);
-                const validSubs = rawSubs.filter(s => s.length >= 1);
-                if (validSubs.length === 0) return null;
-                p._subpaths = validSubs.map(s => fitSubpathAnchors(s)).filter(s => s.length >= 1);
-            }
-            if (!p._subpaths.length) return null;
-        }
-        return p._subpaths;
-    }
-
-    /** 矢量部件当前应显示的 d：顶点编辑中显示贝塞尔曲线，否则用已提交路径 */
-    function getVectorRenderD(p) {
-        if (vertexEditId === p.id && p._subpaths) {
-            const smoothD = subpathsToBezierPath(p._subpaths);
-            if (smoothD) return smoothD;
-        }
-        return p.pathData || '';
-    }
-
     function renderVertexDots(p, el) {
-        const subpaths = ensureVertexSubpaths(p);
-        if (!subpaths || subpaths.length === 0) return;
-        // 进入编辑模式时，用自动拟合的贝塞尔曲线显示原形状（拟合误差很小，不会再退化成折线）
-        const displayD = subpathsToBezierPath(subpaths);
-        if (displayD) {
-            p._displayD = displayD;
-            const pathEl = el.querySelector('svg path');
-            if (pathEl) pathEl.setAttribute('d', displayD);
+        if (!p._subpaths || p._subpaths.length === 0 || p._subpaths.every(s => s.length < 1)) {
+            const rawSubs = parsePathVertices(p.pathData);
+            const validSubs = rawSubs.filter(s => s.length >= 1);
+            if (validSubs.length === 0) return;
+            p._subpaths = validSubs.map(s => simplifyOneSubpath(s));
         }
+        const subpaths = p._subpaths;
         const vg = document.createElement('div');
         vg.className = 'vertex-group';
         vg.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:100;';
@@ -2695,76 +2585,16 @@
                 dot.dataset.vi = vi;
                 dot.addEventListener('mousedown', (e) => {
                     e.stopPropagation(); e.preventDefault();
+                    // 选中该顶点（变红）
                     selectedVertex = { partId: p.id, si: si, vi: vi };
+                    // 更新所有顶点显示（之前选中的恢复蓝色，当前变红）
                     updateAllVertexDotStyles();
-                    renderVertexHandleUI(p, el);
                     startVertexDrag(p, el, si, vi);
                 });
                 vg.appendChild(dot);
             });
         });
         el.appendChild(vg);
-        if (selectedVertex && selectedVertex.partId === p.id) renderVertexHandleUI(p, el);
-    }
-
-    function clearVertexHandleUI(el) {
-        const old = el.querySelector('.vertex-handle-ui');
-        if (old && old.remove) old.remove();
-    }
-
-    function vertexPct(v, size) {
-        return (v / size * 100).toFixed(4) + '%';
-    }
-
-    /** 为选中的锚点绘制 PS 钢笔工具式控制柄（橙色方向线 + 可拖动方块） */
-    function renderVertexHandleUI(p, el) {
-        clearVertexHandleUI(el);
-        if (!selectedVertex || selectedVertex.partId !== p.id || !p._subpaths) return;
-        const sp = p._subpaths[selectedVertex.si];
-        const anchor = sp && sp[selectedVertex.vi];
-        if (!anchor) return;
-        const vW = p.vW || p.w, vH = p.vH || p.h;
-        const ui = document.createElement('div');
-        ui.className = 'vertex-handle-ui';
-        ui.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:102;';
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('viewBox', `0 0 ${fmt(vW)} ${fmt(vH)}`);
-        svg.setAttribute('preserveAspectRatio', 'none');
-        svg.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;';
-        ui.appendChild(svg);
-        const specs = [
-            { which: 'out', hx: anchor.x + (anchor.hox || 0), hy: anchor.y + (anchor.hoy || 0) },
-            { which: 'in', hx: anchor.x + (anchor.hix || 0), hy: anchor.y + (anchor.hiy || 0) }
-        ];
-        specs.forEach(spec => {
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', fmt(anchor.x));
-            line.setAttribute('y1', fmt(anchor.y));
-            line.setAttribute('x2', fmt(spec.hx));
-            line.setAttribute('y2', fmt(spec.hy));
-            line.setAttribute('stroke', '#ff9800');
-            line.setAttribute('stroke-width', '1');
-            line.setAttribute('vector-effect', 'non-scaling-stroke');
-            line.setAttribute('stroke-dasharray', '3,2');
-            line.setAttribute('pointer-events', 'none');
-            line.dataset.handle = spec.which;
-            svg.appendChild(line);
-
-            const dot = document.createElement('div');
-            dot.className = 'vertex-handle-dot';
-            dot.dataset.handle = spec.which;
-            dot.dataset.si = selectedVertex.si;
-            dot.dataset.vi = selectedVertex.vi;
-            dot.style.cssText = `position:absolute;left:${vertexPct(spec.hx, vW)};top:${vertexPct(spec.hy, vH)};width:7px;height:7px;background:#fff;border:1px solid #ff9800;border-radius:2px;transform:translate(-50%,-50%);pointer-events:auto;cursor:move;z-index:103;box-shadow:0 0 2px rgba(0,0,0,0.35);`;
-            dot.addEventListener('mousedown', (e) => {
-                e.stopPropagation(); e.preventDefault();
-                selectedVertex = { partId: p.id, si: selectedVertex.si, vi: selectedVertex.vi };
-                updateAllVertexDotStyles();
-                startHandleDrag(p, el, selectedVertex.si, selectedVertex.vi, spec.which);
-            });
-            ui.appendChild(dot);
-        });
-        el.appendChild(ui);
     }
 
     /** 更新所有顶点圆点样式以反映选中状态 */
@@ -2780,28 +2610,6 @@
         });
     }
 
-    /** 深拷贝钢笔式锚点（保留控制柄偏移） */
-    function cloneVertexSubpaths(subpaths) {
-        return subpaths.map(sp => sp.map(v => ({
-            x: v.x, y: v.y,
-            hix: v.hix || 0, hiy: v.hiy || 0,
-            hox: v.hox || 0, hoy: v.hoy || 0
-        })));
-    }
-
-    /** 根据当前锚点/控制柄重建 path 并提交到部件 */
-    function commitVertexPathData(p) {
-        const displayD = subpathsToBezierPath(p._subpaths);
-        p.pathData = displayD || subpathsToPath(p._subpaths);
-        p._displayD = p.pathData;
-        const entry = partElements.get(p.id);
-        if (entry && entry.inner) {
-            const pathEl = entry.inner.querySelector('path');
-            if (pathEl) pathEl.setAttribute('d', p.pathData);
-        }
-        return p.pathData;
-    }
-
     /** 删除当前选中的顶点 */
     function deleteSelectedVertex() {
         if (!selectedVertex || !vertexEditId || vertexEditId !== selectedVertex.partId) return false;
@@ -2813,7 +2621,7 @@
         if (sp.length < 1) return false; // 子路径不能为空
 
         // 保存旧状态用于撤销
-        const oldSubpaths = cloneVertexSubpaths(p._subpaths);
+        const oldSubpaths = p._subpaths.map(sub => sub.map(v => ({x: v.x, y: v.y})));
         const oldPathData = p.pathData;
 
         sp.splice(vi, 1);
@@ -2843,7 +2651,9 @@
             return true;
         }
 
-        commitVertexPathData(p);
+        p.pathData = subpathsToPath(p._subpaths);
+        const displayD = subpathsToPathDisplay(p._subpaths);
+        p._displayD = displayD;
 
         // 自动选择下一个顶点：优先同子路径的下一顶点，否则选别的子路径
         const newSi = si < p._subpaths.length ? si : 0;
@@ -2851,7 +2661,7 @@
         const newVi = vi < newSp.length ? vi : 0;
         selectedVertex = { partId: p.id, si: newSi, vi: newVi };
 
-        const newSubpaths = cloneVertexSubpaths(p._subpaths);
+        const newSubpaths = p._subpaths.map(sub => sub.map(v => ({x: v.x, y: v.y})));
         const cmd = new VertexDeleteCommand(p.id, oldSubpaths, newSubpaths, oldPathData, p.pathData);
         executeCommand(cmd);
         renderAll();
@@ -2863,12 +2673,7 @@
     function startVertexDrag(p, el, si, vi) {
         const sp = p._subpaths && p._subpaths[si];
         if (!sp || vi < 0 || vi >= sp.length) return;
-        vertexDragState = {
-            p, el, si, vi,
-            oldSubpaths: cloneVertexSubpaths(p._subpaths),
-            oldPathData: p.pathData,
-            vertexInfo: { partId: p.id, si, vi }
-        };
+        vertexDragState = { p, el, si, vi };
         document.addEventListener('mousemove', onVertexDragMove);
         document.addEventListener('mouseup', onVertexDragEnd);
     }
@@ -2883,10 +2688,12 @@
         const vW = p.vW || p.w, vH = p.vH || p.h;
         p._subpaths[si][vi].x = fx * vW;
         p._subpaths[si][vi].y = fy * vH;
-        commitVertexPathData(p);
-        // 拖动锚点时，控制柄随锚点一起平移：只有相邻两段曲线变化
-        if (selectedVertex && selectedVertex.partId === p.id && selectedVertex.si === si && selectedVertex.vi === vi) {
-            renderVertexHandleUI(p, el);
+        p.pathData = subpathsToPath(p._subpaths);
+        const displayD = subpathsToPathDisplay(p._subpaths);
+        const entry = partElements.get(p.id);
+        if (entry && entry.inner) {
+            const pathEl = entry.inner.querySelector('path');
+            if (pathEl) pathEl.setAttribute('d', displayD);
         }
         const dot = el.querySelector(`.vertex-dot[data-si='${si}'][data-vi='${vi}']`);
         if (dot) {
@@ -2896,75 +2703,9 @@
     }
 
     function onVertexDragEnd() {
-        const st = vertexDragState;
-        if (st) {
-            const newSubpaths = cloneVertexSubpaths(st.p._subpaths);
-            if (JSON.stringify(newSubpaths) !== JSON.stringify(st.oldSubpaths) || st.p.pathData !== st.oldPathData) {
-                executeCommand(new VertexMoveCommand(st.p.id, st.oldSubpaths, newSubpaths, st.oldPathData, st.p.pathData, st.vertexInfo));
-            }
-        }
         vertexDragState = null;
         document.removeEventListener('mousemove', onVertexDragMove);
         document.removeEventListener('mouseup', onVertexDragEnd);
-    }
-
-    let handleDragState = null;
-
-    function startHandleDrag(p, el, si, vi, which) {
-        const sp = p._subpaths && p._subpaths[si];
-        if (!sp || vi < 0 || vi >= sp.length) return;
-        handleDragState = {
-            p, el, si, vi, which,
-            oldSubpaths: cloneVertexSubpaths(p._subpaths),
-            oldPathData: p.pathData,
-            vertexInfo: { partId: p.id, si, vi }
-        };
-        document.addEventListener('mousemove', onHandleDragMove);
-        document.addEventListener('mouseup', onHandleDragEnd);
-    }
-
-    function onHandleDragMove(e) {
-        if (!handleDragState) return;
-        const { p, el, si, vi, which } = handleDragState;
-        const rect = el.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
-        const v = p._subpaths[si] && p._subpaths[si][vi];
-        if (!v) return;
-        const vW = p.vW || p.w, vH = p.vH || p.h;
-        // 控制柄允许拖到部件边界外，便于拉长曲线
-        const fx = (e.clientX - rect.left) / rect.width;
-        const fy = (e.clientY - rect.top) / rect.height;
-        const hx = fx * vW - v.x, hy = fy * vH - v.y;
-        if (which === 'out') { v.hox = hx; v.hoy = hy; }
-        else { v.hix = hx; v.hiy = hy; }
-        commitVertexPathData(p);
-
-        const dot = el.querySelector(`.vertex-handle-dot[data-handle='${which}'][data-si='${si}'][data-vi='${vi}']`);
-        if (dot) {
-            dot.style.left = (fx * 100).toFixed(4) + '%';
-            dot.style.top = (fy * 100).toFixed(4) + '%';
-        }
-        const ui = el.querySelector('.vertex-handle-ui');
-        if (ui) {
-            const line = ui.querySelector(`line[data-handle='${which}']`);
-            if (line) {
-                line.setAttribute('x2', fmt(fx * vW));
-                line.setAttribute('y2', fmt(fy * vH));
-            }
-        }
-    }
-
-    function onHandleDragEnd() {
-        const st = handleDragState;
-        if (st) {
-            const newSubpaths = cloneVertexSubpaths(st.p._subpaths);
-            if (JSON.stringify(newSubpaths) !== JSON.stringify(st.oldSubpaths) || st.p.pathData !== st.oldPathData) {
-                executeCommand(new VertexMoveCommand(st.p.id, st.oldSubpaths, newSubpaths, st.oldPathData, st.p.pathData, st.vertexInfo));
-            }
-        }
-        handleDragState = null;
-        document.removeEventListener('mousemove', onHandleDragMove);
-        document.removeEventListener('mouseup', onHandleDragEnd);
     }
 
     let dragState = null;
@@ -3213,7 +2954,7 @@
                 inner.setAttribute('viewBox', `0 0 ${fmt(p.vW || p.w)} ${fmt(p.vH || p.h)}`);
                 const pathEl = inner.querySelector('path');
                 if (pathEl) {
-                    pathEl.setAttribute('d', getVectorRenderD(p));
+                    pathEl.setAttribute('d', p.pathData || '');
                     pathEl.setAttribute('fill', p.color || '#000000');
                     pathEl.setAttribute('opacity', p.opacity);
                 }
@@ -3293,8 +3034,8 @@
                 inner.setAttribute('viewBox', `0 0 ${fmt(p.vW || p.w)} ${fmt(p.vH || p.h)}`);
                 inner.setAttribute('preserveAspectRatio', 'none');
                 const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                pathEl.setAttribute('d', getVectorRenderD(p));
-                pathEl.setAttribute('fill-rule', 'nonzero');
+                pathEl.setAttribute('d', p.pathData);
+                pathEl.setAttribute('fill-rule', 'evenodd');
                 pathEl.setAttribute('fill', p.color || '#000000');
                 pathEl.setAttribute('opacity', p.opacity);
                 inner.appendChild(pathEl);
@@ -3373,7 +3114,7 @@
         // 退出顶点编辑时清除子路径缓存（下次进入重新解析）
         if (vertexEditId !== null) {
             const oldP = parts.find(x => x.id === vertexEditId);
-            if (oldP) { delete oldP._subpaths; delete oldP._displayD; }
+            if (oldP) delete oldP._subpaths;
         }
         vertexEditId = null;
         selectedVertex = null;
@@ -3393,9 +3134,8 @@
         vertexEditId = vertexEditId === id ? null : id;
         // 退出时清除缓存和选中顶点状态，下次进入重新解析（适配顶点拖动后的新路径）
         if (vertexEditId === null) {
-            delete p._subpaths;
-            delete p._displayD;
-                        selectedVertex = null;
+            if (p._subpaths) delete p._subpaths;
+            selectedVertex = null;
         }
         if (isCropping) { isCropping = false; syncCropButton(); }
         renderAll();
@@ -3537,8 +3277,8 @@
                         </div>
                         <div style="display:flex; align-items:center; gap:4px; white-space:nowrap;">
                             <label style="width:70px; flex:0 0 auto;">层级：</label>
-                            <button onclick="movePartZ(${p.id}, 1)" style="width:68px;">↑ 上移</button>
                             <button onclick="movePartZ(${p.id}, -1)" style="width:68px;">↓ 下移</button>
+                            <button onclick="movePartZ(${p.id}, 1)" style="width:68px;">↑ 上移</button>
                         </div>
                     </div>
                 </div>
@@ -3958,7 +3698,7 @@
 
             // 3级嵌套匹配编辑区：outer → clipWrapper(100%+clip-path) → inner(1em+scale / svg)
             if (p.type === 'vector') {
-                html += `<span style="${outerStyle}"><span style="position:absolute;left:0;top:0;width:100%;height:100%;${clipStyle}"><svg style="display:block;overflow:visible;width:${fmt(p.w)}em;height:${fmt(p.h)}em;" viewBox="0 0 ${fmt(p.vW||p.w)} ${fmt(p.vH||p.h)}" preserveAspectRatio="none"><path d="${escapeHtml(p.pathData||'')}" fill-rule="nonzero" fill="${p.color || '#000'}" opacity="${p.opacity}"/></svg></span></span>`;
+                html += `<span style="${outerStyle}"><span style="position:absolute;left:0;top:0;width:100%;height:100%;${clipStyle}"><svg style="display:block;overflow:visible;width:${fmt(p.w)}em;height:${fmt(p.h)}em;" viewBox="0 0 ${fmt(p.vW||p.w)} ${fmt(p.vH||p.h)}" preserveAspectRatio="none"><path d="${escapeHtml(p.pathData||'')}" fill-rule="evenodd" fill="${p.color || '#000'}" opacity="${p.opacity}"/></svg></span></span>`;
             } else {
                 html += `<span style="${outerStyle}"><span style="position:absolute;left:0;top:0;width:100%;height:100%;${clipStyle}"><span style="${innerStyle}">${escapeHtml(p.text)}</span></span></span>`;
             }
@@ -4007,7 +3747,7 @@
                 const fullD = escapeHtml(pathData.join(' '));
                 inner += I(1) + `<span style="${outerStyle}">` + nl +
                     I(2) + `<svg style="display:block;overflow:visible;width:${fmt(p.w)}em;height:${fmt(p.h)}em;" viewBox="0 0 ${fmt(p.w)} ${fmt(p.h)}" preserveAspectRatio="none">` + nl +
-                    I(3) + `<path d="${fullD}" fill-rule="nonzero" style="${colorStyle}"/>` + nl +
+                    I(3) + `<path d="${fullD}" fill-rule="evenodd" style="${colorStyle}"/>` + nl +
                     I(2) + `</svg>` + nl +
                     I(1) + `</span>` + nl;
             });
@@ -4064,7 +3804,7 @@
                 inner += I(1) + `<span style="${outerStyle}">` + nl +
                     I(2) + `<span style="position:absolute;left:0;top:0;width:100%;height:100%;${clipStyle}">` + nl +
                     I(3) + `<svg style="display:block;overflow:visible;width:${fmt(p.w)}em;height:${fmt(p.h)}em;" viewBox="0 0 ${fmt(p.vW||p.w)} ${fmt(p.vH||p.h)}" preserveAspectRatio="none">` + nl +
-                    I(4) + `<path d="${escapeHtml(p.pathData||'')}" fill-rule="nonzero" fill="${p.color || '#000'}" opacity="${p.opacity}"/>` + nl +
+                    I(4) + `<path d="${escapeHtml(p.pathData||'')}" fill-rule="evenodd" fill="${p.color || '#000'}" opacity="${p.opacity}"/>` + nl +
                     I(3) + `</svg>` + nl +
                     I(2) + `</span>` + nl +
                     I(1) + `</span>` + nl;
@@ -4247,7 +3987,7 @@
                 innerSvg.setAttribute('overflow', 'visible');
                 const pathEl = document.createElementNS(svgNs, 'path');
                 pathEl.setAttribute('d', pathData.join(' '));
-                pathEl.setAttribute('fill-rule', 'nonzero');
+                pathEl.setAttribute('fill-rule', 'evenodd');
                 pathEl.setAttribute('fill', p.color || '#000000');
                 pathEl.setAttribute('opacity', p.opacity);
                 innerSvg.appendChild(pathEl);
@@ -4256,7 +3996,7 @@
                 const fullD = pathData.join(' ');
                 const pathEl = document.createElementNS(svgNs, 'path');
                 pathEl.setAttribute('d', fullD);
-                pathEl.setAttribute('fill-rule', 'nonzero');
+                pathEl.setAttribute('fill-rule', 'evenodd');
                 pathEl.setAttribute('fill', p.color || '#000000');
                 pathEl.setAttribute('opacity', p.opacity);
                 g.appendChild(pathEl);
@@ -4770,3 +4510,157 @@
 </script>
 </body>
 </html>
+    </div>
+
+    <div class="post-meta">
+        <i>
+        
+        </i>
+    </div>
+    <br>
+    
+    
+        
+            
+    
+            <div class="post-footer-pre-next">
+                
+
+                
+            </div>
+    
+        
+    
+
+    
+        
+
+     
+</div>
+
+
+
+
+                    
+
+                    <div class="footer">
+    
+        <span> 
+             
+
+            
+                
+
+            
+        </span>
+       
+    
+</div>
+
+
+
+<!--这是指一条线往下的内容-->
+<div class="footer-last">
+    
+            <span></span>
+            
+    
+</div>
+
+
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+    <!--目录-->
+    
+        
+<script src="/js/toc.js"></script>
+
+    
+
+    
+<script src="/js/randomHeaderContent.js"></script>
+
+    <!--回到顶部按钮-->
+    
+        
+<script src="/js/returnToTop.js"></script>
+
+    
+
+    
+        
+<script src="/js/returnToLastPage.js"></script>
+
+    
+
+
+
+
+
+<script src="/js/lightgallery/lightgallery.umd.min.js"></script>
+
+
+
+<script src="/js/lightgallery/plugins/lg-thumbnail.umd.min.js"></script>
+
+
+
+<script src="/js/lightgallery/plugins/lg-fullscreen.umd.min.js"></script>
+
+
+<script src="/js/lightgallery/plugins/lg-autoplay.umd.min.js"></script>
+
+
+<script src="/js/lightgallery/plugins/lg-zoom.umd.min.js"></script>
+
+
+<script src="/js/lightgallery/plugins/lg-rotate.umd.min.js"></script>
+
+
+<script src="/js/lightgallery/plugins/lg-paper.umd.min.js"></script>
+
+
+
+
+<script type="text/javascript">
+     
+    if (typeof lightGallery !== "undefined") {
+        var options1 = {
+            selector: '.gallery-item',
+            plugins: [lgThumbnail, lgFullscreen, lgAutoplay, lgZoom, lgRotate, lgPager], // 启用插件
+            thumbnail: true,          // 显示缩略图
+            zoom: true,               // 启用缩放功
+            rotate: true,             // 启用旋转功能能
+            autoplay: true,        // 启用自动播放功能
+            fullScreen: true,      // 启用全屏功能
+            pager: false, //页码,
+            zoomFromOrigin: true,   // 从原始位置缩放
+            actualSize: true,       // 启用查看实际大小的功能
+            enableZoomAfter: 300,    // 延迟缩放，确保图片加载完成后可缩放
+        };
+        lightGallery(document.getElementsByClassName('.article-gallery')[0], options1); // 修复选择器
+    }
+    
+</script>
+
+
+                </div>
+            
+            
+                <!-- 回到顶部的按钮-->
+                <div class="progress-wrap shadow-drop-2-bottom">
+                    <svg class="progress-circle svg-content" width="100%" height="100%" viewBox="-1 -1 102 102">
+                        <path d="M50,1 a49,49 0 0,1 0,98 a49,49 0 0,1 0,-98"/>
+                    </svg>
+                </div>
+            
+            
+    </body>
+</html>
+<script src="/js/emojiHandler.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        wrapEmojis('.paper');
+    });
+</script>
